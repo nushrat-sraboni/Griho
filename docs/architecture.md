@@ -16,9 +16,9 @@ other, how data is stored, and how the product rules in the PRD are enforced.
   file.
 - Written for future developers and AI helpers. Someone reading it years later
   should understand why things are the way they are.
-- Section 12 lists the product decisions made while writing this file. Some of
-  them settle open questions that the PRD still lists as open. Update the PRD to
-  match.
+- Section 12 lists the product decisions made while writing this file. They
+  settle the questions that were open in the first PRD draft, and they are
+  recorded in the PRD too (PRD Section 12).
 
 ---
 
