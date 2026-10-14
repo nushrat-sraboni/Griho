@@ -1,8 +1,8 @@
 # Griho MVP: Product Requirements Document
 
-**Status:** Draft v1
+**Status:** Draft v2
 **Owner:** Shafin Ahmed
-**Last updated:** 2026-10-09
+**Last updated:** 2026-10-15
 
 ---
 
@@ -31,6 +31,10 @@ Griho ships as two separate apps with separate accounts:
 - Co-owned flats (one flat, one owner account)
 - Manual building deletion
 - Message recovery or grace periods after deletion
+- Blocking and reporting members
+- Handing a building over to another owner without leaving (owner transfer)
+- Code expiry by date or time
+- Photos, attachments, read receipts, or editing a sent message
 - Any feature not listed in Section 5
 
 ---
@@ -39,22 +43,24 @@ Griho ships as two separate apps with separate accounts:
 
 | Role | App | Account type | How they join | Can send DMs to | Can receive DMs from |
 |---|---|---|---|---|---|
-| Owner | Griho Home | Separate account | Building code, approved by owner or manager | Owners, tenants, manager | Owners, tenants, manager |
-| Tenant | Griho Home | Separate account | Flat code, approved by owner or manager | Owners, tenants, manager | Owners, tenants, manager |
-| Manager | Griho Stuff | Separate account | Manager code from owner's building portal, approved by owner | Owners, tenants, manager | Owners, tenants, manager |
-| Guard | Griho Stuff | Separate account | Guard code from manager, approved by manager | None | None |
+| Owner | Griho Home | Separate account | Building code, approved by an owner or manager | Owners, tenants, manager | Owners, tenants, manager |
+| Tenant | Griho Home | Separate account | Flat code, approved by an owner or manager | Owners, tenants, manager | Owners, tenants, manager |
+| Manager | Griho Stuff | Separate account | Manager code from owner's building portal, approved by an owner | Owners, tenants | Owners, tenants |
+| Guard | Griho Stuff | Separate account | Guard code from manager or owner, approved by the manager (or an owner if there is no manager) | None | None |
 
 **Account rules:**
 - A person who is an owner or tenant in a building and also a manager in another building uses two accounts, one per app. A single login across both apps is not allowed.
+- Because each account needs its own email address, the same email address cannot be used in both apps.
 - One account can hold multiple roles across multiple buildings within its own app. Example: an owner account can own several buildings. A Griho Home account can be an owner in Building A and a tenant in Building B.
+- A tenant account can hold only one flat per building.
 
 ---
 
 ## 4. Core Entities
 
-- **Building:** name, address, and building details entered by the creating owner. Has one building code and one manager slot.
+- **Building:** name, address, total number of flats, and contact info, all entered by the creating owner and all required. Has one building code and one manager slot.
 - **Flat:** belongs to one building. Has exactly one owner account at a time (or none, if unclaimed). Has one flat code at a time.
-- **Code:** a join credential. Types: building code, flat code, manager code, guard code. Has a max-use limit, a used count, a remaining count, and a status (active, disabled, deleted).
+- **Code:** a join credential. Types: building code, flat code, manager code, guard code. Has a max-use limit, a used count, a remaining count, and a status (active, disabled, deleted). Codes do not expire by time.
 - **Join request:** a pending request created when someone enters a valid code. Approved or rejected by an owner or manager.
 - **Membership:** the link between an account and a building, with a role and, for tenants, a flat.
 - **Conversation:** a one-to-one DM thread between two members of the same building.
@@ -65,12 +71,12 @@ Griho ships as two separate apps with separate accounts:
 ## 5. Features and User Flows
 
 ### 5.1 Account Creation
-- Users create an account in the app they belong to (Griho Home or Griho Stuff).
+- Users create an account in the app they belong to (Griho Home or Griho Stuff) with an email address and password.
 - Account creation does not, by itself, grant access to any building.
 
 ### 5.2 Building Creation (Owner)
 1. Owner creates an account in Griho Home.
-2. Owner creates a building and enters all building details.
+2. Owner creates a building and enters all building details (name, address, total flats, contact info).
 3. The app generates no code automatically. The owner triggers code creation from the building portal.
 4. The building exists with one owner and no flats, managers, or guards.
 
@@ -90,6 +96,7 @@ Griho ships as two separate apps with separate accounts:
   - Status (active, disabled)
 - Owner or manager can **disable** a code. A disabled code blocks new join requests only. Existing members stay.
 - Owner or manager can **delete** a code.
+- Codes have no expiry date. They stop working only when used up, disabled, or deleted.
 
 **Code type permissions:**
 - Building code: created by owner. Used by owners to join.
@@ -100,23 +107,28 @@ Griho ships as two separate apps with separate accounts:
 ### 5.5 Join Requests
 1. A person enters a code in their app.
 2. The app validates the code. If the code is valid, active, and has remaining uses, a join request is created.
-3. The request appears to the approver: the owner for owner, tenant, and manager requests; the manager for guard requests.
-4. The approver accepts or rejects.
+3. The request appears to the approver: any owner of the building for owner, tenant, and manager requests; the manager for guard requests (or any owner when the building has no manager).
+4. The approver accepts or rejects. The first answer decides, and the request then closes for everyone else.
 5. On approval, the code's used count increases by 1 and membership is created.
 6. On rejection, the code's used count does not change.
 
 **Join request rules:**
 - Join approval is mandatory for every role.
 - Codes do not grant access on their own.
+- A pending request stays open when its approver leaves, so another approver can answer it. Pending requests are deleted when the building is deleted.
+- A person who was removed can send a new request with a valid code. It needs approval like any other request. There is no block list in the MVP.
 
 ### 5.6 Direct Messages
 - One-to-one only. No group chats.
-- Allowed pairs: owner ↔ owner, owner ↔ tenant, owner ↔ manager, tenant ↔ tenant, tenant ↔ manager, manager ↔ manager (not applicable, one manager per building).
+- Allowed pairs: owner ↔ owner, owner ↔ tenant, owner ↔ manager, tenant ↔ tenant, tenant ↔ manager.
 - Guards cannot send or receive messages.
 - Messages are stored as part of the building record.
+- Members find each other through a **member list** for the building. It shows each member's name, flat, and role. Guards are not shown.
+- Messages are plain text.
+- A member can delete a message they sent. It is removed for everyone, and the chat shows "Message deleted".
 
 ### 5.7 Removing Members
-- Owner can remove tenants and the manager.
+- Owner can remove tenants, the manager, and guards.
 - Manager can remove guards.
 - Removed members lose access to the building immediately.
 - Removed members' messages remain in chats, labeled "Former member."
@@ -145,6 +157,7 @@ Griho ships as two separate apps with separate accounts:
 - A flat becomes unclaimed when its owner leaves or deletes their account, and the building still has other owners.
 - An unclaimed flat stays in the building. Its tenants lose access (see 5.9).
 - Another owner in the building can claim it.
+- The previous tenants are **not** restored when a flat is claimed. They must join again with a new flat code, approved by the new owner.
 - Unclaimed flats are deleted when the building is deleted.
 
 ### 5.12 Building Switching (Owner)
@@ -155,11 +168,19 @@ Griho ships as two separate apps with separate accounts:
 - One manager per building.
 - The manager joins through a manager code created by the owner.
 - The manager runs day-to-day operations in Griho Stuff, including generating guard codes and approving guard requests.
+- When the manager leaves or is removed, the guards stay in the building. Until a new manager joins, any owner can create guard codes and approve guard requests.
 
 ### 5.14 Guard
 - Joins through a guard code.
 - Gets an account linked to the building.
 - No features, no messaging, no other actions in v1.
+
+### 5.15 Notifications
+- Members get push alerts on their phone for:
+  - A new message
+  - A join request they sent being approved or rejected
+  - A new join request waiting for them to answer (approvers only)
+- Alerts are basic. There are no settings for them inside the app in the MVP.
 
 ---
 
@@ -169,6 +190,7 @@ Griho ships as two separate apps with separate accounts:
 |---|---|---|---|---|
 | Create building | ✅ | ❌ | ❌ | ❌ |
 | Add and manage flats | ✅ | ❌ | ❌ | ❌ |
+| Claim an unclaimed flat | ✅ | ❌ | ❌ | ❌ |
 | Create manager code | ✅ | ❌ | ❌ | ❌ |
 | Create flat code | ✅ | ❌ | ❌ | ❌ |
 | Create guard code | ✅ | ❌ | ✅ | ❌ |
@@ -176,11 +198,12 @@ Griho ships as two separate apps with separate accounts:
 | View code list | ✅ | ❌ | ✅ | ❌ |
 | Disable or delete code | ✅ | ❌ | ✅ | ❌ |
 | Approve join requests (owner, tenant, manager) | ✅ | ❌ | ❌ | ❌ |
-| Approve join requests (guard) | ❌ | ❌ | ✅ | ❌ |
+| Approve join requests (guard) | ✅ (only when there is no manager) | ❌ | ✅ | ❌ |
 | Remove tenant | ✅ | ❌ | ❌ | ❌ |
 | Remove manager | ✅ | ❌ | ❌ | ❌ |
-| Remove guard | ❓ Open | ❌ | ✅ | ❌ |
+| Remove guard | ✅ | ❌ | ✅ | ❌ |
 | Send and receive DMs | ✅ | ✅ | ✅ | ❌ |
+| Delete own message | ✅ | ✅ | ✅ | ❌ |
 | Switch active building | ✅ | ❌ | ❌ | ❌ |
 | Leave building or delete account | ✅ | ✅ | ✅ | ✅ |
 
@@ -203,6 +226,10 @@ Griho ships as two separate apps with separate accounts:
 13. All exits (leave, remove, delete) require typed-name confirmation.
 14. Removed or left members show as "Former member." Deleted accounts show as "Deleted account."
 15. The building name is visible on every screen in Griho Home.
+16. A tenant can hold only one flat per building.
+17. Any owner of a building can approve join requests for that building. The first answer closes the request.
+18. Codes do not expire by time.
+19. The same email address cannot be used for both a Griho Home and a Griho Stuff account.
 
 ---
 
@@ -214,6 +241,7 @@ Griho ships as two separate apps with separate accounts:
 | Member left building | Former member |
 | Member deleted their account | Deleted account |
 | Member who was "Former member" later deletes their account | Deleted account |
+| Message deleted by its sender | Message deleted |
 
 ---
 
@@ -226,6 +254,7 @@ Griho ships as two separate apps with separate accounts:
 | Owner leaves in multi-owner building | Owner's access, tenants' access to the owner's flats | Building, other flats, messages |
 | Last owner leaves or deletes | Building, flats, managers, guards, codes, join requests, messages | Nothing |
 | Flat owner account deleted (multi-owner building) | Owner's access | Flat record (unclaimed), tenants lose access |
+| Member deletes a message they sent | The message text, for everyone | A "Message deleted" marker in the chat |
 
 ---
 
@@ -245,27 +274,36 @@ Griho ships as two separate apps with separate accounts:
 - Co-owned flats
 - Manual building deletion
 - Message grace periods, recovery, or export
+- Blocking and reporting members
+- Owner transfer
+- Code expiry by date or time
+- Photos, attachments, read receipts, and editing messages
 - Any feature not listed in Section 5
 
 ---
 
-## 12. Open Questions
+## 12. Decisions on Former Open Questions
 
-### Confirmed open (parked for team discussion)
-1. When a manager leaves or is removed, do their guards also get removed?
-2. Can owners remove guards, or only the manager?
+All questions that were open in Draft v1 were answered on 2026-10-14 while planning the architecture. The technical side of these answers is in [`architecture.md`](./architecture.md).
 
-### Unresolved gaps (not yet decided, must be answered before build)
-3. **Pending requests on exit:** what happens to pending join requests when the approver leaves, is removed, or the building is deleted?
-4. **Manager vacancy:** when the manager leaves or is removed, who generates guard codes until a new manager joins? Can the owner appoint a new manager directly?
-5. **Unclaimed flat claim:** when a new owner claims an unclaimed flat, do its previous tenants remain? (Their access was revoked on owner exit, so they would need to rejoin.)
-6. **Tenant re-joining:** after a tenant is removed, can they rejoin the same flat using the same code if uses remain? Is there a cooldown or a block list?
-7. **Tenant in multiple flats:** can one tenant account hold more than one flat in the same building?
-8. **Starting a DM:** how does a member find another member to message? Is there a member directory? Does it show all roles, or only some?
-9. **Guard messaging direction:** guards are blocked from sending and receiving. Confirm both directions.
-10. **Message features:** are edit, delete-for-me, delete-for-everyone, read receipts, or media attachments in MVP? Not discussed yet.
-11. **Blocking and reporting:** is there a way to block a member or report abuse? Not discussed yet, and it matters for a building full of strangers.
-12. **Notifications:** do members get push notifications for new messages and join request outcomes? Not discussed yet.
-13. **Code expiry:** do codes expire by time, or only by use count?
-14. **Owner transfer:** can an owner hand over a building to another owner without leaving?
-15. **Building details:** which fields are required at creation (address, total flats, contact info)? Not defined yet.
+| # | Question | Decision |
+|---|---|---|
+| 1 | When a manager leaves or is removed, do their guards also get removed? | No. Guards stay in the building. |
+| 2 | Can owners remove guards, or only the manager? | Owners and the manager can both remove guards. |
+| 3 | What happens to pending join requests when the approver leaves, is removed, or the building is deleted? | They stay open for other approvers. They are deleted with the building. |
+| 4 | Manager vacancy: who generates guard codes and approves guards? | Any owner, until a new manager joins. |
+| 5 | When a new owner claims an unclaimed flat, do previous tenants remain? | No. They must rejoin with a new flat code. |
+| 6 | Can a removed tenant rejoin the same flat? | Yes, with a new request and approval. No cooldown or block list in the MVP. |
+| 7 | Can one tenant hold more than one flat in the same building? | No. One flat per tenant per building. |
+| 8 | How does a member find another member to message? | A member list for the building showing name, flat, and role. Guards are hidden. |
+| 9 | Guard messaging direction | Guards can neither send nor receive. |
+| 10 | Message features | Plain text, plus deleting your own message (removed for everyone). No editing, read receipts, or media. |
+| 11 | Blocking and reporting | Not in the MVP. |
+| 12 | Notifications | Basic push alerts are in the MVP (see 5.15). |
+| 13 | Code expiry | By use count only. Owners and the manager can disable a code at any time. |
+| 14 | Owner transfer | Not in the MVP. |
+| 15 | Required building details | Name, address, total flats, and contact info. |
+
+### Still open
+
+None for the MVP. New questions go here when they come up.
