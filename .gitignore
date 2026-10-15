@@ -6,3 +6,37 @@
 # own computer (who they are, what language they like to be spoken to in).
 # It must stay private, so every teammate's copy is different and never shared.
 CLAUDE.local.md
+
+# ---- Added for the app scaffold ----
+# Installed libraries (huge, rebuilt by "npm install")
+node_modules/
+
+# Private settings and keys. ".env.example" is the shared blank form.
+.env
+.env.*
+!.env.example
+
+# Expo / phone-app build leftovers
+.expo/
+dist/
+web-build/
+expo-env.d.ts
+/apps/*/ios
+/apps/*/android
+*.jks
+*.p8
+*.p12
+*.key
+*.mobileprovision
+*.pem
+.metro-health-check*
+
+# Tool leftovers
+*.tsbuildinfo
+coverage/
+npm-debug.*
+.DS_Store
+
+# Local Supabase leftovers
+supabase/.temp/
+supabase/.branches/
