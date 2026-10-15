@@ -17,7 +17,7 @@ This file is the first thing every new Claude Code session should read. It says 
 - Roles: owner, tenant, manager, guard. Guards can only join; they cannot message.
 - MVP leaves out group chats, announcements, photos, read receipts, message editing, blocking, owner transfer, and code expiry by date.
 
-**Current status:** planning is done (PRD and architecture written). **No application code exists yet.** The repo currently holds only docs and this file.
+**Current status:** planning is done (PRD, architecture, and API contract written) and the empty project skeleton is set up (the "scaffold"). Both apps open as simple "hello" screens and the shared toolbox is connected. **No real features exist yet.** The backend is not built.
 
 ---
 
@@ -55,7 +55,7 @@ Three friends build Griho together. **None of us is a professional developer**, 
 - **Backend:** one Supabase project shared by both apps. It provides email and password login, Postgres, Realtime live chat, and Edge Functions for push alerts and account deletion.
 - **The database is the security guard.** Every rule that matters (who sees what, who approves what) is enforced in Postgres using Row Level Security and SQL functions. The apps are only screens and must never be trusted to enforce rules.
 - **The apps never write important tables directly.** They call SQL functions (RPC). Each function runs in one transaction, checks permissions, then writes.
-- **Repo layout (planned):**
+- **Repo layout:**
   - `apps/home/`: Griho Home
   - `apps/staff/`: Griho Staff
   - `packages/shared/`: code both apps use (Supabase client, types, chat screens and hooks, validation helpers)
@@ -66,6 +66,18 @@ Three friends build Griho together. **None of us is a professional developer**, 
 - **Database changes are always a new migration file.** Never edit an old one.
 - **Anything both apps need goes in `packages/shared`.** Never copy it.
 - **Tests come first in priority:** database security tests, then function tests for exit flows, then shared unit tests, then a few app smoke tests. Tests must pass before code goes to a remote branch.
+
+---
+
+## Getting Started (Running the Project)
+
+Words explained: **Node** is the engine that runs our tools. **npm** is the tool that downloads the libraries (ready-made code) we use. A **workspace** is a repo that holds several projects together.
+
+1. Install **Node** (version 20.19 or newer) and **git**. Docker is **only for backend work** (Shafin). Bishal and Sraboni do not need it.
+2. In the top folder, run `npm install`. This downloads everything for all projects at once.
+3. Copy `.env.example` to a new file called `.env` inside your app's folder (`apps/home/` or `apps/staff/`) and fill it in. Ask Shafin for the values. Never share `.env`.
+4. Start your app: `npm run start --workspace @griho/home` (Bishal) or `npm run start --workspace @griho/staff` (Sraboni). Open it on your phone with the Expo Go app.
+5. **Before every push, run `npm run check`.** It tidies-checks (Prettier), spell-checks (ESLint), type-checks (TypeScript), and runs the tests. It must pass. GitHub runs the same checks automatically on every pull request.
 
 ---
 

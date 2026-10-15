@@ -50,4 +50,4 @@ This file is read when a session works inside `apps/home/`. It adds to the root 
 
 ## Status
 
-No app code exists yet. The Expo project has not been created.
+The Expo project exists and shows a simple "hello" screen. It is connected to `@griho/shared`. No real screens yet. Start it with `npm run start --workspace @griho/home` (see "Getting Started" in the root `CLAUDE.md`). Docker is not needed for this app.

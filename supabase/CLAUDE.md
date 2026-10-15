@@ -57,4 +57,6 @@ A script that fills the dev project with fake people (an owner, a tenant, a mana
 
 ## Status
 
-Nothing is built yet. The Supabase project, local setup, and first migration are still to do.
+`supabase init` has been run (`config.toml` exists) and the `migrations/`, `functions/`, and `tests/` folders are ready but empty. No tables or functions yet.
+
+**Docker:** running the backend on your own computer (`supabase start`) needs Docker. Only Shafin needs this. Bishal and Sraboni use the shared dev project instead, so Docker is optional for them.

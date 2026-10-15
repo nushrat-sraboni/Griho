@@ -1,0 +1,29 @@
+{
+  "name": "griho",
+  "description": "Griho top-level workspace file. It tells npm that this repo holds several projects (the two apps and the shared toolbox) and holds the checks everyone runs before pushing.",
+  "private": true,
+  "version": "0.0.0",
+  "workspaces": [
+    "apps/*",
+    "packages/*"
+  ],
+  "engines": {
+    "node": ">=20.19"
+  },
+  "scripts": {
+    "format": "prettier --write \"**/*.{ts,tsx,js,mjs,json}\"",
+    "format:check": "prettier --check \"**/*.{ts,tsx,js,mjs,json}\"",
+    "lint": "eslint .",
+    "typecheck": "npm run typecheck --workspaces --if-present",
+    "test": "npm run test --workspaces --if-present",
+    "check": "npm run format:check && npm run lint && npm run typecheck && npm run test"
+  },
+  "devDependencies": {
+    "@eslint/js": "^10.0.1",
+    "eslint": "^10.12.0",
+    "prettier": "^3.9.10",
+    "typescript": "~6.0.3",
+    "typescript-eslint": "^8.71.2",
+    "vitest": "^5.0.5"
+  }
+}

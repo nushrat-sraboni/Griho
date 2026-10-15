@@ -1,0 +1,13 @@
+# .prettierignore
+#
+# Files and folders the code-tidying tool (Prettier) must leave alone,
+# because they are generated, copied from elsewhere, or not code.
+node_modules
+package-lock.json
+.expo
+dist
+web-build
+coverage
+supabase/.temp
+supabase/.branches
+*.md
