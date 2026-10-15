@@ -58,7 +58,7 @@ Griho ships as two separate apps with separate accounts:
 
 ## 4. Core Entities
 
-- **Building:** name, address, total number of flats, and contact info, all entered by the creating owner and all required. Has one building code and one manager slot.
+- **Building:** name, address, and contact info, all entered by the creating owner and all required. (The number of flats is not asked. It is simply the number of flats the owners add.) Has one building code and one manager slot.
 - **Flat:** belongs to one building. Has exactly one owner account at a time (or none, if unclaimed). Has one flat code at a time.
 - **Code:** a join credential. Types: building code, flat code, manager code, guard code. Has a max-use limit, a used count, a remaining count, and a status (active, disabled, deleted). Codes do not expire by time.
 - **Join request:** a pending request created when someone enters a valid code. Approved or rejected by an owner or manager.
@@ -76,7 +76,7 @@ Griho ships as two separate apps with separate accounts:
 
 ### 5.2 Building Creation (Owner)
 1. Owner creates an account in Griho Home.
-2. Owner creates a building and enters all building details (name, address, total flats, contact info).
+2. Owner creates a building and enters all building details (name, address, contact info).
 3. The app generates no code automatically. The owner triggers code creation from the building portal.
 4. The building exists with one owner and no flats, managers, or guards.
 
@@ -278,6 +278,7 @@ Griho ships as two separate apps with separate accounts:
 - Owner transfer
 - Code expiry by date or time
 - Photos, attachments, read receipts, and editing messages
+- Password reset, email verification, and changing your display name
 - Any feature not listed in Section 5
 
 ---
@@ -302,7 +303,13 @@ All questions that were open in Draft v1 were answered on 2026-10-14 while plann
 | 12 | Notifications | Basic push alerts are in the MVP (see 5.15). |
 | 13 | Code expiry | By use count only. Owners and the manager can disable a code at any time. |
 | 14 | Owner transfer | Not in the MVP. |
-| 15 | Required building details | Name, address, total flats, and contact info. |
+| 15 | Required building details | Name, address, and contact info. The "total flats" number was removed on 2026-10-15 because nothing used it. |
+| 16 | One person, two roles in the same building? | No. One active role per person per building. |
+| 17 | Which codes can the manager see? | Guard codes only. |
+| 18 | Limits | A code's max uses is 1 to 1000. A message is at most 2000 characters. Code tries are limited to 8 per 10 minutes per account. |
+| 19 | Typed-name check | Capital letters and extra spaces at the ends are ignored. |
+| 20 | Password reset and email verification | Not in the MVP. |
+| 21 | Changing your display name | Not in the MVP. |
 
 ### Still open
 

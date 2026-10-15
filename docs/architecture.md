@@ -156,7 +156,7 @@ accounts ──< memberships >── buildings ──< flats
 | Column | Notes |
 |---|---|
 | `name`, `address` | Required |
-| `total_flats`, `contact_info` | Required at creation (decided in Section 12) |
+| `contact_info` | Required at creation (decided in Section 12). There is no "total flats" column; the flat count is just the rows in `flats`. |
 
 **`flats`**
 
@@ -335,7 +335,7 @@ the removed member's name for remove). A modified app cannot skip it.
 ### 8.1 Create a building (owner)
 
 1. Owner signs up in Griho Home and logs in.
-2. Calls `create_building` with name, address, total flats and contact info.
+2. Calls `create_building` with name, address and contact info.
 3. One transaction creates the building and an `owner` membership.
 4. No codes are created. Codes appear only when the owner asks (PRD 5.2).
 
@@ -471,6 +471,7 @@ Tests must pass before any code goes to a remote branch (`CLAUDE.md`).
 - Code expiry dates
 - A website or separate web portal
 - Phone-number login
+- Password reset, email verification, and changing the display name
 
 ---
 
@@ -495,7 +496,13 @@ questions (Section 12 of the PRD).
 | 12 | Notifications | Basic push alerts are in the MVP. |
 | 13 | Code expiry | Use count only. Owners and managers can disable at any time. |
 | 14 | Owner transfer | Not in the MVP. |
-| 15 | Building details | Name, address, total flats, and contact info are all required. |
+| 15 | Building details | Name, address, and contact info are required. "Total flats" was removed on 2026-10-15 (nothing used it). |
+| 16 | One person, two roles in one building? | No. One active role per person per building. |
+| 17 | Which codes can the manager see? | Guard codes only. |
+| 18 | Limits | Max uses per code: 1 to 1000. Message: 2000 characters. Code tries: 8 per 10 minutes per account. |
+| 19 | Typed-name check | Ignore capital letters and extra spaces at the ends. |
+| 20 | Password reset, email verification | Not in the MVP. |
+| 21 | Changing display name | Not in the MVP. |
 
 Extra decisions made here:
 
