@@ -13,11 +13,39 @@ This file is the first thing every new Claude Code session should read. It says 
 - Each building is a self-contained space with its own flats, members, and messages. Data from one building must never be visible in another.
 - It ships as **two separate apps with separate accounts**:
   - **Griho Home**: for owners and tenants.
-  - **Griho Stuff**: for managers and guards.
+  - **Griho Staff**: for managers and guards.
 - Roles: owner, tenant, manager, guard. Guards can only join; they cannot message.
 - MVP leaves out group chats, announcements, photos, read receipts, message editing, blocking, owner transfer, and code expiry by date.
 
 **Current status:** planning is done (PRD and architecture written). **No application code exists yet.** The repo currently holds only docs and this file.
+
+---
+
+## Team and Lanes
+
+Three friends build Griho together. **None of us is a professional developer**, so every session must follow the simple-language rule in the Rules section below.
+
+| Person | What they build | Their lane (the only folders they may change) |
+|---|---|---|
+| **Bishal** | **Griho Home** (the app for owners and tenants) | `apps/home/` |
+| **Sraboni** | **Griho Staff** (the app for managers and guards) | `apps/staff/` |
+| **Shafin** | **The backend** (the hidden part that stores data and enforces rules, built on Supabase) and the team's setup | `supabase/`, `packages/shared/`, `docs/`, and the files at the top of the repo (like `CLAUDE.md`, `.gitignore`, automation settings) |
+
+### Who am I talking to?
+
+- Each person keeps a private file called `CLAUDE.local.md` on their own computer. It is never shared (it is listed in `.gitignore`). It says who they are and which language they like.
+- **At the start of every session, read `CLAUDE.local.md` to learn who you are working for.**
+- If the file is missing or does not say who the person is, **ask them** (use a multiple-choice question: Bishal, Sraboni, or Shafin) **before changing anything.**
+- **Making your own file is easy.** The shared template is `CLAUDE.local.example.md`. Just tell your Claude: "Make my CLAUDE.local.md from the example." It will ask you a few simple questions and create the file for you. Never overwrite an existing one without asking.
+
+### Lane rules (strict)
+
+- **Only change files inside the lane of the person you are working for.** Reading other lanes is fine and encouraged. Changing them is not.
+- **Never touch another person's lane, even if it looks like a tiny fix.** Instead, tell the person what is needed and who owns it, so they can ask the owner (for example: "This needs a new backend function. Please ask Shafin.").
+- **`packages/shared/` (the toolbox both apps use) is owned by Shafin.** Bishal and Sraboni ask for changes there. They do not edit it themselves.
+- **Database changes** (everything under `supabase/migrations/`) are made only by Shafin's sessions.
+- **The plan documents** (`docs/prd.md`, `docs/architecture.md`) and this `CLAUDE.md`: anyone may suggest a change, but **Shafin must review and approve it before it is merged.** Put the change on its own branch and say clearly in the pull request that Shafin's review is needed.
+- If a task needs changes in more than one lane, split it. Do your own part, and write a short, plain "request" for the other owner. Do not do their part for them.
 
 ---
 
@@ -29,7 +57,7 @@ This file is the first thing every new Claude Code session should read. It says 
 - **The apps never write important tables directly.** They call SQL functions (RPC). Each function runs in one transaction, checks permissions, then writes.
 - **Repo layout (planned):**
   - `apps/home/`: Griho Home
-  - `apps/stuff/`: Griho Stuff
+  - `apps/staff/`: Griho Staff
   - `packages/shared/`: code both apps use (Supabase client, types, chat screens and hooks, validation helpers)
   - `supabase/migrations/`: database changes, in order
   - `supabase/functions/`: Edge Functions
@@ -66,7 +94,21 @@ Read the right doc before changing the matching area. Do not guess product rules
 
 ## Rules
 
-- The user is non-technical and should be treated as a 12-year-old. Explain everything in very simple language.
+### Simple language (strict, for every session and every teammate)
+
+Bishal, Sraboni, and Shafin have **no developer experience**. Talk to each of them as if you were talking to a curious 12-year-old kid who has never built anything like this. This rule is strict and has no exceptions.
+
+- **Explain a hard word before you use it.** Give a one-sentence everyday meaning first, then use the word. Example: "the *backend* (the hidden part of the app that stores information and enforces the rules)".
+- **Use everyday comparisons.** Example: "A database is like a giant school notebook where each page has neat rows."
+- **Short sentences and short paragraphs.** One idea at a time. No walls of text.
+- **Never assume they already know something.** Do not say "obviously", "simply", "just", or "as you know".
+- **Spell out every short form** (like API, RPC, RLS, PR, CI) the first time, and explain what it means in plain words.
+- **Say what you did and why**, not only the commands or code. Show a command only if they need to run it, and say what it will do.
+- **Explain errors in plain words:** what went wrong, why, and what happens next.
+- This applies to chat replies, plans, pull request descriptions, and questions. It applies in **every language** (the language itself comes from the person's `CLAUDE.local.md`).
+- If you catch yourself writing in a technical way, stop and rewrite it simply.
+
+### Everything else
 - If you are not sure about something, ask a clarifying question before acting. Never guess.
 - Use multiple-choice questions (MCQ widgets) for clarifying questions whenever possible.
 - Explain the plan first. Before making big changes, show a short plan and wait for the user's go-ahead.
