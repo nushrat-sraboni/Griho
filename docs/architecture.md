@@ -95,8 +95,7 @@ Griho/
 ├── docs/
 │   ├── prd.md           Product rules
 │   └── architecture.md  This file
-├── CLAUDE.md            Working rules for AI helpers
-└── README.md
+└── CLAUDE.md            Working rules for AI helpers
 ```
 
 Rules for the repo:

@@ -1,5 +1,69 @@
 # CLAUDE.md
 
+This file is the first thing every new Claude Code session should read. It says what Griho is, how we build it, where the detailed docs live, and the working rules.
+
+---
+
+## What We Are Building
+
+**Griho** is a building-scoped communication platform.
+
+- Verified members of **one building** can send **one-to-one direct messages** to each other.
+- Access is controlled by codes, join approvals, and role-based permissions.
+- Each building is a self-contained space with its own flats, members, and messages. Data from one building must never be visible in another.
+- It ships as **two separate apps with separate accounts**:
+  - **Griho Home**: for owners and tenants.
+  - **Griho Stuff**: for managers and guards.
+- Roles: owner, tenant, manager, guard. Guards can only join; they cannot message.
+- MVP leaves out group chats, announcements, photos, read receipts, message editing, blocking, owner transfer, and code expiry by date.
+
+**Current status:** planning is done (PRD and architecture written). **No application code exists yet.** The repo currently holds only docs and this file.
+
+---
+
+## How We Build It
+
+- **Stack:** React Native with Expo (one codebase for iPhone and Android), TypeScript everywhere, SQL for the database.
+- **Backend:** one Supabase project shared by both apps. It provides email and password login, Postgres, Realtime live chat, and Edge Functions for push alerts and account deletion.
+- **The database is the security guard.** Every rule that matters (who sees what, who approves what) is enforced in Postgres using Row Level Security and SQL functions. The apps are only screens and must never be trusted to enforce rules.
+- **The apps never write important tables directly.** They call SQL functions (RPC). Each function runs in one transaction, checks permissions, then writes.
+- **Repo layout (planned):**
+  - `apps/home/`: Griho Home
+  - `apps/stuff/`: Griho Stuff
+  - `packages/shared/`: code both apps use (Supabase client, types, chat screens and hooks, validation helpers)
+  - `supabase/migrations/`: database changes, in order
+  - `supabase/functions/`: Edge Functions
+  - `supabase/tests/`: database tests (security rules, counters)
+  - `docs/`: product and architecture docs
+- **Database changes are always a new migration file.** Never edit an old one.
+- **Anything both apps need goes in `packages/shared`.** Never copy it.
+- **Tests come first in priority:** database security tests, then function tests for exit flows, then shared unit tests, then a few app smoke tests. Tests must pass before code goes to a remote branch.
+
+---
+
+## Where to Find Things (Doc Routes)
+
+Read the right doc before changing the matching area. Do not guess product rules.
+
+| Question | Read this |
+|---|---|
+| What should the product do? Who can do what? What are the business rules? | [`docs/prd.md`](./docs/prd.md) |
+| How is it built? Data model, security layers, key flows, push alerts, testing plan? | [`docs/architecture.md`](./docs/architecture.md) |
+| What are the working rules for commits, branches, and PRs? | The **Rules** section below |
+
+**Source of truth:** if the PRD and the architecture doc disagree about a product rule, **the PRD wins**. Fix the architecture doc.
+
+**Quick pointers from the PRD and architecture:**
+
+- Join flow: enter code, then `submit_join_request` creates a pending request, then an approver accepts or rejects. Used count goes up only on approval. See PRD 5.5 and architecture 7.4 and 8.2.
+- Who approves: any owner approves owner, tenant, and manager requests. Guard requests go to the manager, or to any owner if there is no manager.
+- Exits (leave, remove, delete account) always need a typed-name confirmation, and the function must check it too. See PRD 5.8 and architecture 7.5.
+- Last owner leaving deletes the whole building with no recovery. See PRD 5.10 and architecture 6.3 and 8.6.
+- Labels in chat: "Former member" and "Deleted account" are calculated when reading, never stored. See architecture 6.2.
+- Tenants are never auto-restored when a flat is claimed; they must rejoin with a new flat code. See PRD 5.11.
+
+---
+
 ## Rules
 
 - The user is non-technical and should be treated as a 12-year-old. Explain everything in very simple language.
