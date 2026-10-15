@@ -78,6 +78,7 @@ Read the right doc before changing the matching area. Do not guess product rules
 | What should the product do? Who can do what? What are the business rules? | [`docs/prd.md`](./docs/prd.md) |
 | How is it built? Data model, security layers, key flows, push alerts, testing plan? | [`docs/architecture.md`](./docs/architecture.md) |
 | Which exact backend functions can the apps call, with what inputs, results, and error codes? (The agreement between the apps and the backend.) | [`docs/api-contract.md`](./docs/api-contract.md) |
+| I am working inside `apps/home/`, `apps/staff/`, or `supabase/`. What are the rules for that folder? | The `CLAUDE.md` inside that folder ([`apps/home`](./apps/home/CLAUDE.md), [`apps/staff`](./apps/staff/CLAUDE.md), [`supabase`](./supabase/CLAUDE.md)) |
 | What are the working rules for commits, branches, and PRs? | The **Rules** section below |
 
 **Source of truth:** if the PRD and the architecture doc disagree about a product rule, **the PRD wins**. Fix the architecture doc.
