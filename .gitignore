@@ -1,0 +1,8 @@
+# .gitignore
+#
+# Tells git which files it must NEVER save into the shared project history.
+#
+# CLAUDE.local.md is a private note-to-Claude that each person keeps on their
+# own computer (who they are, what language they like to be spoken to in).
+# It must stay private, so every teammate's copy is different and never shared.
+CLAUDE.local.md

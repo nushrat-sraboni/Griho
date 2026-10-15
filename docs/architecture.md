@@ -26,7 +26,7 @@ other, how data is stored, and how the product rules in the PRD are enforced.
 
 ```
  ┌──────────────────┐        ┌──────────────────┐
- │   Griho Home     │        │   Griho Stuff    │
+ │   Griho Home     │        │   Griho Staff    │
  │ (owners/tenants) │        │ (managers/guards)│
  │  React Native    │        │  React Native    │
  └────────┬─────────┘        └────────┬─────────┘
@@ -84,7 +84,7 @@ One repository holds both apps and everything they share.
 Griho/
 ├── apps/
 │   ├── home/            Griho Home (owners, tenants)
-│   └── stuff/           Griho Stuff (managers, guards)
+│   └── staff/           Griho Staff (managers, guards)
 ├── packages/
 │   └── shared/          Code both apps use: Supabase client, types,
 │                        chat screens/hooks, validation helpers
@@ -107,19 +107,19 @@ Rules for the repo:
 
 ---
 
-## 5. Accounts: Home vs Stuff
+## 5. Accounts: Home vs Staff
 
 The PRD requires two kinds of accounts that must never be one login. We use
 **one Supabase project** and tag each account.
 
-- `accounts.app` is either `home` or `stuff`. It is set at sign-up from the app
+- `accounts.app` is either `home` or `staff`. It is set at sign-up from the app
   the person signed up in and never changes.
-- Each app checks the tag after login. A `stuff` account that logs in to Griho
+- Each app checks the tag after login. A `staff` account that logs in to Griho
   Home is signed out with a clear message, and vice versa.
 - The database also enforces the tag: roles only fit their app (owner and
-  tenant need `home`, manager and guard need `stuff`).
+  tenant need `home`, manager and guard need `staff`).
 - **Consequence:** Supabase allows one account per email address. A person who
-  needs both a Home and a Stuff account must use two different email
+  needs both a Home and a Staff account must use two different email
   addresses. The sign-up screens must explain this.
 
 One account can hold many memberships across many buildings **inside its own
@@ -147,7 +147,7 @@ accounts ──< memberships >── buildings ──< flats
 | Column | Notes |
 |---|---|
 | `id` | Same as the Supabase Auth user id |
-| `app` | `home` or `stuff` |
+| `app` | `home` or `staff` |
 | `display_name` | Shown in chats and the member list |
 | `deleted_at` | Set when the account is deleted. The row stays as a tombstone so old messages can be labeled "Deleted account". Name and other personal data are wiped. |
 
@@ -503,7 +503,7 @@ Extra decisions made here:
 |---|---|
 | Phone apps | React Native (Expo), iPhone and Android |
 | Backend | One Supabase project for both apps |
-| Account separation | One backend with accounts tagged Home or Stuff. Same email cannot be used in both apps. |
+| Account separation | One backend with accounts tagged Home or Staff. Same email cannot be used in both apps. |
 | Login | Email and password |
 | Building portal | Screens inside the apps, no website |
 | Repo | One repo containing both apps and shared code |
@@ -513,7 +513,7 @@ Extra decisions made here:
 
 ## 13. Risks and Things to Watch
 
-- **Two emails needed for two accounts.** Users who want a Home and a Stuff
+- **Two emails needed for two accounts.** Users who want a Home and a Staff
   account need two different email addresses. Test this in the sign-up flow.
 - **Approvals vs. counts.** Because used count rises only on approval, several
   people can be pending for the last slot. The approval step must handle the

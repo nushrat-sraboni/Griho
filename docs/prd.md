@@ -13,7 +13,7 @@ Griho is a building-scoped communication platform. Verified members of a single 
 Griho ships as two separate apps with separate accounts:
 
 - **Griho Home** for owners and tenants
-- **Griho Stuff** for managers and guards
+- **Griho Staff** for managers and guards
 
 ---
 
@@ -45,8 +45,8 @@ Griho ships as two separate apps with separate accounts:
 |---|---|---|---|---|---|
 | Owner | Griho Home | Separate account | Building code, approved by an owner or manager | Owners, tenants, manager | Owners, tenants, manager |
 | Tenant | Griho Home | Separate account | Flat code, approved by an owner or manager | Owners, tenants, manager | Owners, tenants, manager |
-| Manager | Griho Stuff | Separate account | Manager code from owner's building portal, approved by an owner | Owners, tenants | Owners, tenants |
-| Guard | Griho Stuff | Separate account | Guard code from manager or owner, approved by the manager (or an owner if there is no manager) | None | None |
+| Manager | Griho Staff | Separate account | Manager code from owner's building portal, approved by an owner | Owners, tenants | Owners, tenants |
+| Guard | Griho Staff | Separate account | Guard code from manager or owner, approved by the manager (or an owner if there is no manager) | None | None |
 
 **Account rules:**
 - A person who is an owner or tenant in a building and also a manager in another building uses two accounts, one per app. A single login across both apps is not allowed.
@@ -71,7 +71,7 @@ Griho ships as two separate apps with separate accounts:
 ## 5. Features and User Flows
 
 ### 5.1 Account Creation
-- Users create an account in the app they belong to (Griho Home or Griho Stuff) with an email address and password.
+- Users create an account in the app they belong to (Griho Home or Griho Staff) with an email address and password.
 - Account creation does not, by itself, grant access to any building.
 
 ### 5.2 Building Creation (Owner)
@@ -167,7 +167,7 @@ Griho ships as two separate apps with separate accounts:
 ### 5.13 Manager
 - One manager per building.
 - The manager joins through a manager code created by the owner.
-- The manager runs day-to-day operations in Griho Stuff, including generating guard codes and approving guard requests.
+- The manager runs day-to-day operations in Griho Staff, including generating guard codes and approving guard requests.
 - When the manager leaves or is removed, the guards stay in the building. Until a new manager joins, any owner can create guard codes and approve guard requests.
 
 ### 5.14 Guard
@@ -229,7 +229,7 @@ Griho ships as two separate apps with separate accounts:
 16. A tenant can hold only one flat per building.
 17. Any owner of a building can approve join requests for that building. The first answer closes the request.
 18. Codes do not expire by time.
-19. The same email address cannot be used for both a Griho Home and a Griho Stuff account.
+19. The same email address cannot be used for both a Griho Home and a Griho Staff account.
 
 ---
 
