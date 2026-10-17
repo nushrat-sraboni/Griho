@@ -9,6 +9,6 @@
 import type { GrihoApi } from './api';
 import { createFakeApi } from './fake/fakeApi';
 
-export type { GrihoApi } from './api';
+export type { GrihoApi, MembershipWithLastOwner, Ok } from './api';
 
 export const api: GrihoApi = createFakeApi({ app: 'home' });

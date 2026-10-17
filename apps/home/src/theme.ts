@@ -37,6 +37,18 @@ export const colors = {
   arc: '#D3E1D9',
   /** The small grey pill that says "Testing only". */
   chip: '#EDEFE9',
+  /** Small rounded labels ("Owner", "Active") and their text. */
+  pillTeal: '#E1ECE9',
+  pillTealText: '#0F4F43',
+  pillAmber: '#FFF3DB',
+  pillAmberText: '#4A3200',
+  pillGrey: '#EDEFE9',
+  pillGreyText: '#4A5A56',
+  /** Green "it worked" message box. */
+  successBackground: '#E3F3EC',
+  successText: '#0E4A3F',
+  /** Red border around a text box that needs fixing. */
+  fieldError: '#B3261E',
   /** A pale square (a window with the light off). */
   windowOff: '#E1ECE9',
   /** Red message box. */
