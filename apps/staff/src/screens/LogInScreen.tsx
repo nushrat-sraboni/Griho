@@ -2,14 +2,19 @@
 //
 // The log-in screen of Griho Staff. The person types an email and a password,
 // then taps "Log in". If it works, the app moves on. If not, a plain sentence
-// explains why. There is also a link to the sign-up screen.
-// Owned by Sraboni.
+// explains why. There is also a link to the sign-up screen. The look follows the
+// Griho Staff design. Owned by Sraboni.
 
 import { useState } from 'react';
-import { Pressable, Text, TextInput, View } from 'react-native';
+import { Pressable, Text, View } from 'react-native';
 
 import type { Account } from '@griho/shared';
 import Brand from '../components/Brand';
+import { PrimaryButton } from '../components/Buttons';
+import Eyebrow from '../components/Eyebrow';
+import Field from '../components/Field';
+import HeroCard from '../components/HeroCard';
+import Screen from '../components/Screen';
 import { signIn } from '../fakeBackend';
 import { friendlyErrorMessage } from '../friendlyMessages';
 import { styles } from '../styles';
@@ -39,50 +44,46 @@ export default function LogInScreen({ onLoggedIn, onGoToSignUp }: Props) {
   }
 
   return (
-    <View style={styles.screen}>
-      <View style={styles.card}>
-        <Brand />
-        <Text style={styles.eyebrow}>Staff log in</Text>
-        <Text style={styles.title}>Welcome back.</Text>
-        <Text style={styles.subtitle}>Log in for managers and guards.</Text>
+    <Screen>
+      <Brand />
+      <Eyebrow>Welcome back</Eyebrow>
+      <Text style={styles.title}>Log in to your building</Text>
+      <Text style={styles.subtitle}>For managers and guards.</Text>
 
-        <Text style={styles.label}>Email</Text>
-        <TextInput
-          style={styles.input}
+      <HeroCard label="Your building" title="Keep doors and codes in order." />
+
+      <View style={styles.card}>
+        <Field
+          label="Email"
           value={email}
           onChangeText={setEmail}
           placeholder="you@example.com"
-          placeholderTextColor="#9aa6a0"
           autoCapitalize="none"
           autoCorrect={false}
           keyboardType="email-address"
           textContentType="emailAddress"
         />
-
-        <Text style={styles.label}>Password</Text>
-        <TextInput
-          style={styles.input}
+        <Field
+          label="Password"
           value={password}
           onChangeText={setPassword}
-          secureTextEntry
+          secret
           textContentType="password"
         />
 
         {error ? <Text style={styles.error}>{error}</Text> : null}
 
-        <Pressable
-          style={[styles.button, busy && styles.buttonDisabled]}
+        <PrimaryButton
+          label={busy ? 'Logging in...' : 'Log in'}
           onPress={handleLogIn}
           disabled={busy}
-          accessibilityRole="button"
-        >
-          <Text style={styles.buttonText}>{busy ? 'Logging in...' : 'Log in'}</Text>
-        </Pressable>
-
+        />
         <Pressable onPress={onGoToSignUp} accessibilityRole="button">
           <Text style={styles.link}>New here? Make an account</Text>
         </Pressable>
       </View>
-    </View>
+
+      <Text style={styles.note}>Testing only: sraboni@staff.test, any password</Text>
+    </Screen>
   );
 }

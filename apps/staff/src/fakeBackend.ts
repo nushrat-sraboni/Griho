@@ -87,43 +87,32 @@ type FakeCode = {
   value: string;
   role: 'manager' | 'guard';
   building_name: string;
+  address: string;
   remaining: number;
   status: 'active' | 'disabled';
 };
 
+const BUILDING = { building_name: 'Lakeview Heights', address: 'House 18, Road 7, Dhaka' };
+
 const codes: FakeCode[] = [
-  {
-    value: 'GUARD-2468',
-    role: 'guard',
-    building_name: 'Rose Garden',
-    remaining: 3,
-    status: 'active',
-  },
-  {
-    value: 'MANAGER-1357',
-    role: 'manager',
-    building_name: 'Rose Garden',
-    remaining: 1,
-    status: 'active',
-  },
-  {
-    value: 'GUARD-0000',
-    role: 'guard',
-    building_name: 'Rose Garden',
-    remaining: 0,
-    status: 'active',
-  },
-  {
-    value: 'GUARD-OFF',
-    role: 'guard',
-    building_name: 'Rose Garden',
-    remaining: 5,
-    status: 'disabled',
-  },
+  { value: 'GUARD-2468', role: 'guard', ...BUILDING, remaining: 10, status: 'active' },
+  { value: 'MANAGER-1357', role: 'manager', ...BUILDING, remaining: 1, status: 'active' },
+  { value: 'GUARD-0000', role: 'guard', ...BUILDING, remaining: 0, status: 'active' },
+  { value: 'GUARD-OFF', role: 'guard', ...BUILDING, remaining: 5, status: 'disabled' },
 ];
 
 // The join request each account has sent (keyed by account id).
 const pendingRequests = new Map<string, JoinRequestResult>();
+
+/** The building a person belongs to, once their request has been approved. */
+export type Membership = {
+  building_name: string;
+  address: string;
+  role: 'manager' | 'guard';
+};
+
+// The building each account belongs to (keyed by account id).
+const memberships = new Map<string, Membership>();
 
 /** What the backend tells us after a join request is sent. */
 export type JoinRequestResult = {
@@ -148,6 +137,9 @@ export async function submitJoinRequest(codeValue: string): Promise<JoinRequestR
   if (code.remaining <= 0) {
     throw new Error('CODE_USED_UP');
   }
+  if (memberships.has(currentAccount.id)) {
+    throw new Error('ALREADY_MEMBER');
+  }
   if (pendingRequests.has(currentAccount.id)) {
     throw new Error('ALREADY_PENDING');
   }
@@ -167,4 +159,58 @@ export async function submitJoinRequest(codeValue: string): Promise<JoinRequestR
 export function getMyPendingRequest(): JoinRequestResult | null {
   if (!currentAccount) return null;
   return pendingRequests.get(currentAccount.id) ?? null;
+}
+
+/** The building the logged-in person belongs to, or null if they are in none. */
+export function getMyMembership(): Membership | null {
+  if (!currentAccount) return null;
+  return memberships.get(currentAccount.id) ?? null;
+}
+
+/**
+ * FOR TESTING ONLY. Pretends a manager or owner said yes to my waiting request.
+ * In the real app, someone else approves it and the backend creates the
+ * membership. Here, the code's used count goes down by one, only on approval.
+ */
+export async function approveMyRequestForTesting(): Promise<Membership> {
+  if (!currentAccount) {
+    throw new Error('NOT_AUTHENTICATED');
+  }
+  const request = pendingRequests.get(currentAccount.id);
+  if (!request) {
+    throw new Error('NOT_FOUND');
+  }
+  const code = codes.find(
+    (c) => c.building_name === request.building_name && c.role === request.role,
+  );
+  if (!code || code.remaining <= 0) {
+    throw new Error('CODE_USED_UP');
+  }
+  code.remaining -= 1;
+  const membership: Membership = {
+    building_name: request.building_name,
+    address: code.address,
+    role: request.role,
+  };
+  pendingRequests.delete(currentAccount.id);
+  memberships.set(currentAccount.id, membership);
+  return membership;
+}
+
+/**
+ * Leave my building. The person must type their own name to confirm (the name
+ * check ignores capital letters and spaces at the ends, like the real backend).
+ */
+export async function leaveBuilding(typedName: string): Promise<{ result: 'left' }> {
+  if (!currentAccount) {
+    throw new Error('NOT_AUTHENTICATED');
+  }
+  if (!memberships.has(currentAccount.id)) {
+    throw new Error('NOT_A_MEMBER');
+  }
+  if (typedName.trim().toLowerCase() !== currentAccount.display_name.trim().toLowerCase()) {
+    throw new Error('TYPED_NAME_MISMATCH');
+  }
+  memberships.delete(currentAccount.id);
+  return { result: 'left' };
 }

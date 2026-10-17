@@ -1,115 +1,100 @@
 // apps/staff/src/styles.ts
 //
-// The shared look for the Griho Staff screens. The colours and shapes come from
-// the Griho design reference (the owner-portal preview): a warm cream background,
-// soft white cards, a deep green for buttons, and rounded corners.
+// The shared look for the Griho Staff screens. The colours and shapes follow the
+// Griho Staff design: a warm cream background, deep green for buttons and the
+// banner, soft white cards with very round corners, and heavy dark-green headlines.
 // Keeping them here means every screen looks the same. Owned by Sraboni.
 
 import { StyleSheet } from 'react-native';
 
-// The colours from the design reference, in one place.
+// The colours from the design, in one place.
 export const colors = {
-  ink: '#243c39',
-  muted: '#73817b',
-  green: '#2e6b61',
-  dark: '#20564e',
-  mint: '#e1eee8',
-  cream: '#faf8f2',
-  line: '#e7ece7',
-  gold: '#c58c45',
-  sand: '#f7ebdd',
+  ink: '#123a30', // headlines and strong text
+  muted: '#5b6a64', // grey helper text
+  green: '#19705b', // buttons, links, the banner
+  greenSoft: '#1f7e6a', // the lighter circle inside the banner
+  mint: '#e1eee8', // pale green badges
+  cream: '#f7f5f0', // the screen background
+  line: '#ecefeb', // thin card borders
+  gold: '#c58c45', // the little gold line above headlines
+  goldDot: '#e2a93b', // the gold tile in the logo
+  sand: '#f7ebdd', // pale gold notes
+  sandText: '#6b4412', // text on sand
+  inputBg: '#f3f5f2', // inside a text box
+  inputBorder: '#9aa9a2', // a text box's edge
+  ring: '#d4e6dc', // the circles in the top corner
+  ringFill: '#e9f0ea',
+  softGrey: '#eceeea', // hint boxes
+  danger: '#a3302a', // leave and remove buttons
   white: '#ffffff',
   error: '#b42318',
 };
 
 export const styles = StyleSheet.create({
-  // The whole screen: cream background, with the card centred in it.
-  screen: {
-    flex: 1,
-    backgroundColor: colors.cream,
-    padding: 22,
-    justifyContent: 'center',
-  },
-  // The soft white card that holds each screen's content.
+  // The whole screen: cream background.
+  screen: { flex: 1, backgroundColor: colors.cream },
+  // The scrolling content: sits on top of the circles.
+  content: { flexGrow: 1, paddingHorizontal: 24, paddingTop: 28, paddingBottom: 24 },
+  // A soft white card.
   card: {
     backgroundColor: colors.white,
-    borderRadius: 22,
-    padding: 22,
-    borderWidth: 1,
-    borderColor: colors.white,
-    shadowColor: colors.ink,
-    shadowOpacity: 0.07,
-    shadowRadius: 18,
-    shadowOffset: { width: 0, height: 8 },
-    elevation: 2,
-  },
-  // The "G" logo row at the top of the log-in and join screens.
-  brandRow: { flexDirection: 'row', alignItems: 'center', marginBottom: 22 },
-  brandMark: {
-    width: 42,
-    height: 42,
-    borderRadius: 14,
-    backgroundColor: colors.green,
-    alignItems: 'center',
-    justifyContent: 'center',
-    marginRight: 11,
-  },
-  brandMarkText: { color: colors.white, fontSize: 22, fontWeight: '900' },
-  brandName: { color: colors.ink, fontSize: 22, fontWeight: '900', letterSpacing: -0.5 },
-  brandTagline: {
-    color: colors.muted,
-    fontSize: 9,
-    fontWeight: '900',
-    letterSpacing: 1.5,
-    textTransform: 'uppercase',
-  },
-  // A small green label above the big title, like "PRIVATE COMMUNICATION" in the design.
-  eyebrow: {
-    color: colors.green,
-    fontSize: 10,
-    fontWeight: '900',
-    letterSpacing: 1.8,
-    marginBottom: 8,
-    textTransform: 'uppercase',
-  },
-  title: { color: colors.ink, fontSize: 28, fontWeight: '900', letterSpacing: -0.8 },
-  subtitle: { color: colors.muted, fontSize: 13, lineHeight: 20, marginTop: 8, marginBottom: 18 },
-  label: { color: colors.muted, fontSize: 11, fontWeight: '800', marginTop: 12, marginBottom: 6 },
-  input: {
+    borderRadius: 28,
+    padding: 20,
     borderWidth: 1,
     borderColor: colors.line,
-    borderRadius: 12,
-    backgroundColor: colors.white,
-    color: colors.ink,
-    paddingHorizontal: 13,
-    paddingVertical: 11,
-    fontSize: 15,
-  },
-  button: {
-    backgroundColor: colors.green,
-    borderRadius: 12,
-    paddingVertical: 14,
-    alignItems: 'center',
-    marginTop: 22,
-  },
-  buttonText: { color: colors.white, fontSize: 14, fontWeight: '900' },
-  buttonDisabled: { opacity: 0.5 },
-  link: {
-    color: colors.green,
-    fontSize: 12,
-    fontWeight: '900',
-    textAlign: 'center',
-    marginTop: 16,
-  },
-  error: { color: colors.error, fontSize: 12, marginTop: 14, lineHeight: 18 },
-  // A soft note box, like the grey notices in the design.
-  note: {
-    backgroundColor: '#f4f7f2',
-    color: colors.muted,
-    borderRadius: 13,
-    padding: 13,
-    fontSize: 11,
-    lineHeight: 17,
     marginTop: 14,
   },
+  title: {
+    color: colors.ink,
+    fontSize: 34,
+    fontWeight: '800',
+    letterSpacing: -1.2,
+    lineHeight: 38,
+    marginTop: 10,
+  },
+  subtitle: { color: colors.muted, fontSize: 15, lineHeight: 21, marginTop: 8 },
+  // A soft grey hint box.
+  note: {
+    backgroundColor: colors.softGrey,
+    color: colors.muted,
+    borderRadius: 20,
+    paddingHorizontal: 16,
+    paddingVertical: 12,
+    fontSize: 12,
+    lineHeight: 18,
+    marginTop: 14,
+  },
+  // A pale gold note, used for the "each app needs its own email" reminder.
+  noteSand: {
+    backgroundColor: colors.sand,
+    color: colors.sandText,
+    borderRadius: 16,
+    paddingHorizontal: 14,
+    paddingVertical: 12,
+    fontSize: 12,
+    lineHeight: 18,
+    marginTop: 16,
+  },
+  link: {
+    color: colors.green,
+    fontSize: 16,
+    fontWeight: '700',
+    textAlign: 'center',
+    paddingVertical: 12,
+    marginTop: 4,
+  },
+  error: { color: colors.error, fontSize: 13, marginTop: 14, lineHeight: 18 },
+  // A small round-cornered label, like "Guard" or "Active".
+  badge: {
+    backgroundColor: colors.mint,
+    color: colors.green,
+    borderRadius: 8,
+    paddingHorizontal: 10,
+    paddingVertical: 5,
+    fontSize: 11,
+    fontWeight: '800',
+    overflow: 'hidden',
+  },
+  // The space that pushes the bottom buttons down to the bottom of the screen.
+  spacer: { flex: 1, minHeight: 20 },
 });
