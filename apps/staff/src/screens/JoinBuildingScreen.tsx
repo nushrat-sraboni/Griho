@@ -8,6 +8,7 @@
 import { useState } from 'react';
 import { Pressable, Text, TextInput, View } from 'react-native';
 
+import Brand from '../components/Brand';
 import { submitJoinRequest, type JoinRequestResult } from '../fakeBackend';
 import { friendlyErrorMessage } from '../friendlyMessages';
 import { styles } from '../styles';
@@ -37,33 +38,38 @@ export default function JoinBuildingScreen({ onRequestSent, onLogOut }: Props) {
 
   return (
     <View style={styles.screen}>
-      <Text style={styles.title}>Join a building</Text>
-      <Text style={styles.subtitle}>Type the code you were given by the building owner.</Text>
+      <View style={styles.card}>
+        <Brand />
+        <Text style={styles.eyebrow}>Join a building</Text>
+        <Text style={styles.title}>Enter your code.</Text>
+        <Text style={styles.subtitle}>Type the code you were given by the building owner.</Text>
 
-      <Text style={styles.label}>Code</Text>
-      <TextInput
-        style={styles.input}
-        value={code}
-        onChangeText={setCode}
-        placeholder="For example: GUARD-2468"
-        autoCapitalize="characters"
-        autoCorrect={false}
-      />
+        <Text style={styles.label}>Code</Text>
+        <TextInput
+          style={styles.input}
+          value={code}
+          onChangeText={setCode}
+          placeholder="For example: GUARD-2468"
+          placeholderTextColor="#9aa6a0"
+          autoCapitalize="characters"
+          autoCorrect={false}
+        />
 
-      {error ? <Text style={styles.error}>{error}</Text> : null}
+        {error ? <Text style={styles.error}>{error}</Text> : null}
 
-      <Pressable
-        style={[styles.button, (busy || !code.trim()) && styles.buttonDisabled]}
-        onPress={handleSend}
-        disabled={busy || !code.trim()}
-        accessibilityRole="button"
-      >
-        <Text style={styles.buttonText}>{busy ? 'Sending...' : 'Send request'}</Text>
-      </Pressable>
+        <Pressable
+          style={[styles.button, (busy || !code.trim()) && styles.buttonDisabled]}
+          onPress={handleSend}
+          disabled={busy || !code.trim()}
+          accessibilityRole="button"
+        >
+          <Text style={styles.buttonText}>{busy ? 'Sending...' : 'Send request'}</Text>
+        </Pressable>
 
-      <Pressable onPress={onLogOut} accessibilityRole="button">
-        <Text style={styles.link}>Log out</Text>
-      </Pressable>
+        <Pressable onPress={onLogOut} accessibilityRole="button">
+          <Text style={styles.link}>Log out</Text>
+        </Pressable>
+      </View>
     </View>
   );
 }

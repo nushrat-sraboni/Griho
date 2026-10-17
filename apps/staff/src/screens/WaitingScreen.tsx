@@ -7,6 +7,7 @@
 
 import { Pressable, Text, View } from 'react-native';
 
+import Brand from '../components/Brand';
 import type { JoinRequestResult } from '../fakeBackend';
 import { styles } from '../styles';
 
@@ -20,18 +21,22 @@ export default function WaitingScreen({ request, onLogOut }: Props) {
 
   return (
     <View style={styles.screen}>
-      <Text style={styles.title}>Waiting for approval</Text>
-      <Text style={styles.subtitle}>
-        You asked to join {request.building_name} as a {roleWords}.
-      </Text>
-      <Text style={styles.note}>
-        A person in charge of the building must say yes first. Please wait. Once you are approved,
-        the app will show your building.
-      </Text>
+      <View style={styles.card}>
+        <Brand />
+        <Text style={styles.eyebrow}>Request sent</Text>
+        <Text style={styles.title}>Waiting for approval</Text>
+        <Text style={styles.subtitle}>
+          You asked to join {request.building_name} as a {roleWords}.
+        </Text>
+        <Text style={styles.note}>
+          A person in charge of the building must say yes first. Please wait. Once you are approved,
+          the app will show your building.
+        </Text>
 
-      <Pressable style={styles.button} onPress={onLogOut} accessibilityRole="button">
-        <Text style={styles.buttonText}>Log out</Text>
-      </Pressable>
+        <Pressable style={styles.button} onPress={onLogOut} accessibilityRole="button">
+          <Text style={styles.buttonText}>Log out</Text>
+        </Pressable>
+      </View>
     </View>
   );
 }
