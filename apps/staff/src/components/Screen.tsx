@@ -40,7 +40,14 @@ function Ring({
   );
 }
 
-export default function Screen({ children }: { children: ReactNode }) {
+export default function Screen({
+  children,
+  footer,
+}: {
+  children: ReactNode;
+  /** Something fixed to the bottom of the screen, like the bottom menu. */
+  footer?: ReactNode;
+}) {
   return (
     <View style={styles.screen}>
       <Ring size={254} top={-55} right={-84} filled />
@@ -57,6 +64,7 @@ export default function Screen({ children }: { children: ReactNode }) {
         >
           {children}
         </ScrollView>
+        {footer}
       </KeyboardAvoidingView>
     </View>
   );

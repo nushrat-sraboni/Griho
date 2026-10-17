@@ -5,7 +5,7 @@
 //   - log in or sign up, when nobody is logged in
 //   - the join screen, when the person belongs to no building yet
 //   - the waiting screen, while their join request is being answered
-//   - the building home screen, once they belong to a building
+//   - the guard home screen or the manager workspace, once they belong to a building
 // Later steps add the real manager screens. Owned by Sraboni.
 
 import { StatusBar } from 'expo-status-bar';
@@ -20,9 +20,10 @@ import {
   type JoinRequestResult,
   type Membership,
 } from './src/fakeBackend';
-import BuildingHomeScreen from './src/screens/BuildingHomeScreen';
+import GuardHomeScreen from './src/screens/GuardHomeScreen';
 import JoinBuildingScreen from './src/screens/JoinBuildingScreen';
 import LogInScreen from './src/screens/LogInScreen';
+import ManagerWorkspace from './src/screens/ManagerWorkspace';
 import SignUpScreen from './src/screens/SignUpScreen';
 import WaitingScreen from './src/screens/WaitingScreen';
 
@@ -83,17 +84,26 @@ export default function App() {
       />
     );
   } else if (screen === 'home' && account && membership) {
-    content = (
-      <BuildingHomeScreen
-        displayName={account.display_name}
-        membership={membership}
-        onLeft={() => {
-          setMembership(null);
-          setScreen('join');
-        }}
-        onLogOut={handleLogOut}
-      />
-    );
+    const goBackToJoin = () => {
+      setMembership(null);
+      setScreen('join');
+    };
+    content =
+      membership.role === 'manager' ? (
+        <ManagerWorkspace
+          displayName={account.display_name}
+          membership={membership}
+          onLeft={goBackToJoin}
+          onLogOut={handleLogOut}
+        />
+      ) : (
+        <GuardHomeScreen
+          displayName={account.display_name}
+          membership={membership}
+          onLeft={goBackToJoin}
+          onLogOut={handleLogOut}
+        />
+      );
   } else {
     content = <LogInScreen onLoggedIn={handleLoggedIn} onGoToSignUp={() => setScreen('signUp')} />;
   }

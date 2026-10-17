@@ -14,7 +14,7 @@
 // password was typed. Any typed password works.
 // Delete this file when the real backend is ready. Owned by Sraboni.
 
-import type { Account } from '@griho/shared';
+import type { Account, CodeInfo, PendingRequestForApprover } from '@griho/shared';
 
 // Fake accounts to log in with while we build. Emails end in ".test" on purpose,
 // so they can never be real people's addresses.
@@ -96,7 +96,7 @@ const BUILDING = { building_name: 'Lakeview Heights', address: 'House 18, Road 7
 
 const codes: FakeCode[] = [
   { value: 'GUARD-2468', role: 'guard', ...BUILDING, remaining: 10, status: 'active' },
-  { value: 'MANAGER-1357', role: 'manager', ...BUILDING, remaining: 1, status: 'active' },
+  { value: 'MANAGER-1357', role: 'manager', ...BUILDING, remaining: 50, status: 'active' },
   { value: 'GUARD-0000', role: 'guard', ...BUILDING, remaining: 0, status: 'active' },
   { value: 'GUARD-OFF', role: 'guard', ...BUILDING, remaining: 5, status: 'disabled' },
 ];
@@ -213,4 +213,192 @@ export async function leaveBuilding(typedName: string): Promise<{ result: 'left'
   }
   memberships.delete(currentAccount.id);
   return { result: 'left' };
+}
+
+// ---- Manager tools: guard requests and guard codes ----
+//
+// Pretend data for the manager workspace. It copies these functions from
+// docs/api-contract.md: list_pending_join_requests, decide_join_request,
+// list_codes, create_code, and set_code_status. Only a manager may use them;
+// anyone else gets NOT_ALLOWED, as the real backend will do.
+
+type FakeGuardRequest = {
+  request_id: string;
+  requester_name: string;
+  code_id: string;
+  created_at: string;
+  status: 'pending' | 'approved' | 'rejected';
+};
+
+let guardCodes: CodeInfo[] = [];
+let guardRequests: FakeGuardRequest[] = [];
+let guardCount = 0;
+let codeCounter = 0;
+
+// A sample number, until the Messages screen exists.
+const OPEN_CHATS = 4;
+
+function minutesAgo(minutes: number): string {
+  return new Date(Date.now() - minutes * 60000).toISOString();
+}
+
+function makeCode(
+  id: string,
+  value: string,
+  maxUses: number,
+  usedCount: number,
+  status: 'active' | 'disabled',
+): CodeInfo {
+  return {
+    id,
+    type: 'guard',
+    value,
+    flat: null,
+    max_uses: maxUses,
+    used_count: usedCount,
+    remaining: maxUses - usedCount,
+    status,
+    created_at: minutesAgo(60 * 24 * 3),
+  };
+}
+
+/** Puts the pretend manager data back to how it starts. Tests use this too. */
+export function resetManagerDataForTesting(): void {
+  guardCodes = [
+    makeCode('code-1', 'GRD-4F7K', 3, 1, 'active'),
+    makeCode('code-2', 'GRD-7P3Q', 5, 2, 'active'),
+    makeCode('code-3', 'GRD-2WD8', 1, 0, 'active'),
+    makeCode('code-4', 'GRD-9M2C', 2, 2, 'disabled'),
+  ];
+  guardRequests = [
+    {
+      request_id: 'request-1',
+      requester_name: 'Karim Hossain',
+      code_id: 'code-1',
+      created_at: minutesAgo(12),
+      status: 'pending',
+    },
+    {
+      request_id: 'request-2',
+      requester_name: 'Salma Begum',
+      code_id: 'code-1',
+      created_at: minutesAgo(60),
+      status: 'pending',
+    },
+  ];
+  guardCount = 5;
+  codeCounter = guardCodes.length;
+}
+resetManagerDataForTesting();
+
+// Only a logged-in manager may use the manager tools.
+function requireManager(): void {
+  if (!currentAccount) {
+    throw new Error('NOT_AUTHENTICATED');
+  }
+  if (memberships.get(currentAccount.id)?.role !== 'manager') {
+    throw new Error('NOT_ALLOWED');
+  }
+}
+
+/** The numbers shown on the manager's overview screen. */
+export async function getManagerCounts(): Promise<{
+  guards: number;
+  waiting: number;
+  codesInUse: number;
+  chats: number;
+}> {
+  requireManager();
+  return {
+    guards: guardCount,
+    waiting: guardRequests.filter((r) => r.status === 'pending').length,
+    codesInUse: guardCodes.filter((c) => c.status === 'active').length,
+    chats: OPEN_CHATS,
+  };
+}
+
+/** Guard requests waiting for the manager's answer, newest first. */
+export async function listPendingJoinRequests(): Promise<PendingRequestForApprover[]> {
+  requireManager();
+  return guardRequests
+    .filter((r) => r.status === 'pending')
+    .map((r) => ({
+      request_id: r.request_id,
+      requester_name: r.requester_name,
+      role: 'guard' as const,
+      flat_label: null,
+      created_at: r.created_at,
+    }))
+    .sort((a, b) => Date.parse(b.created_at) - Date.parse(a.created_at));
+}
+
+/**
+ * Say yes or no to a request. The first answer wins. Approving uses up one use of
+ * the code and adds a guard. Rejecting uses up nothing.
+ */
+export async function decideJoinRequest(
+  requestId: string,
+  decision: 'approve' | 'reject',
+): Promise<{ request_id: string; status: 'approved' | 'rejected' }> {
+  requireManager();
+  const request = guardRequests.find((r) => r.request_id === requestId);
+  if (!request) {
+    throw new Error('NOT_FOUND');
+  }
+  if (request.status !== 'pending') {
+    throw new Error('REQUEST_ALREADY_DECIDED');
+  }
+  if (decision === 'approve') {
+    const code = guardCodes.find((c) => c.id === request.code_id);
+    if (!code || code.remaining <= 0) {
+      throw new Error('CODE_USED_UP');
+    }
+    code.used_count += 1;
+    code.remaining -= 1;
+    guardCount += 1;
+    request.status = 'approved';
+  } else {
+    request.status = 'rejected';
+  }
+  return { request_id: request.request_id, status: request.status };
+}
+
+/** The guard codes, newest first. */
+export async function listCodes(): Promise<CodeInfo[]> {
+  requireManager();
+  return guardCodes
+    .map((c) => ({ ...c }))
+    .sort((a, b) => Date.parse(b.created_at) - Date.parse(a.created_at));
+}
+
+/** Make a new guard code that can be used 1 to 1000 times. */
+export async function createCode(maxUses: number): Promise<CodeInfo> {
+  requireManager();
+  if (!Number.isInteger(maxUses) || maxUses < 1 || maxUses > 1000) {
+    throw new Error('INVALID_INPUT');
+  }
+  codeCounter += 1;
+  const tail = (codeCounter * 7919 + 1234).toString(36).toUpperCase().slice(-4).padStart(4, '0');
+  const code = makeCode(`code-${codeCounter}`, `GRD-${tail}`, maxUses, 0, 'active');
+  code.created_at = new Date().toISOString();
+  guardCodes.push(code);
+  return { ...code };
+}
+
+/** Turn a code off, back on, or delete it. This blocks new requests only. */
+export async function setCodeStatus(
+  codeId: string,
+  status: 'active' | 'disabled' | 'deleted',
+): Promise<CodeInfo | { ok: true }> {
+  requireManager();
+  const code = guardCodes.find((c) => c.id === codeId);
+  if (!code) {
+    throw new Error('NOT_FOUND');
+  }
+  if (status === 'deleted') {
+    guardCodes = guardCodes.filter((c) => c.id !== codeId);
+    return { ok: true };
+  }
+  code.status = status;
+  return { ...code };
 }
