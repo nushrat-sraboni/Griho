@@ -1,21 +1,28 @@
 // apps/home/src/components/Logo.tsx
 //
-// The small Griho Home logo: a teal rounded square with four little windows
-// (one of them lit amber), and the name beside it. Owned by Bishal.
+// The Griho Home logo. `LogoMark` is just the small teal rounded square with
+// four little windows (one of them lit amber). `Logo` is the mark plus the name
+// beside it. Owned by Bishal.
 
 import { StyleSheet, Text, View } from 'react-native';
 
 import { colors, fonts } from '../theme';
 
+export function LogoMark() {
+  return (
+    <View style={styles.mark} accessibilityElementsHidden importantForAccessibility="no">
+      <View style={styles.window} />
+      <View style={[styles.window, styles.lit]} />
+      <View style={styles.window} />
+      <View style={styles.window} />
+    </View>
+  );
+}
+
 export default function Logo() {
   return (
     <View style={styles.row} accessibilityRole="header" accessibilityLabel="Griho Home">
-      <View style={styles.mark} accessibilityElementsHidden importantForAccessibility="no">
-        <View style={styles.window} />
-        <View style={[styles.window, styles.lit]} />
-        <View style={styles.window} />
-        <View style={styles.window} />
-      </View>
+      <LogoMark />
       <Text style={styles.name}>
         Griho <Text style={styles.product}>Home</Text>
       </Text>

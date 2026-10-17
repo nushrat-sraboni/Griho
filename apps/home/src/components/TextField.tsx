@@ -2,10 +2,11 @@
 //
 // One labelled text box. The label sits above it. A "password" box hides what
 // is typed and has a Show / Hide button on its right edge. The border turns
-// teal while the person is typing in it. Owned by Bishal.
+// teal while the person is typing in it, and red (with a short sentence under
+// the box) when `error` is given. Owned by Bishal.
 
 import { useState } from 'react';
-import { Pressable, StyleSheet, Text, TextInput, View } from 'react-native';
+import { Pressable, StyleSheet, Text, TextInput, View, type TextInputProps } from 'react-native';
 
 import { colors, fonts } from '../theme';
 
@@ -18,6 +19,12 @@ type Props = {
   placeholder?: string;
   /** For password boxes: is this a brand new password (sign up) or an existing one (log in)? */
   newPassword?: boolean;
+  /** A short sentence shown in red under the box. The box gets a red border. */
+  error?: string;
+  /** Capital letters: 'words' suits a name, 'none' suits an email or a phone number. */
+  capitalize?: 'none' | 'words' | 'sentences';
+  /** Tells the phone what to suggest. Leave out for the sensible default. */
+  autoComplete?: TextInputProps['autoComplete'];
 };
 
 export default function TextField({
@@ -27,35 +34,44 @@ export default function TextField({
   kind = 'text',
   placeholder,
   newPassword = false,
+  error,
+  capitalize,
+  autoComplete,
 }: Props) {
   const [focused, setFocused] = useState(false);
   const [shown, setShown] = useState(false);
   const isPassword = kind === 'password';
+
+  const defaultComplete: TextInputProps['autoComplete'] =
+    kind === 'email'
+      ? 'email'
+      : isPassword
+        ? newPassword
+          ? 'new-password'
+          : 'current-password'
+        : 'name';
 
   return (
     <View style={styles.wrapper}>
       <Text style={styles.label}>{label}</Text>
       <View>
         <TextInput
-          style={[styles.input, focused && styles.inputFocused, isPassword && styles.inputPassword]}
+          style={[
+            styles.input,
+            focused && styles.inputFocused,
+            !!error && styles.inputError,
+            isPassword && styles.inputPassword,
+          ]}
           value={value}
           onChangeText={onChangeText}
           placeholder={placeholder}
           placeholderTextColor={colors.placeholder}
           accessibilityLabel={label}
           secureTextEntry={isPassword && !shown}
-          autoCapitalize={kind === 'text' ? 'words' : 'none'}
+          autoCapitalize={capitalize ?? (kind === 'text' ? 'words' : 'none')}
           autoCorrect={false}
           keyboardType={kind === 'email' ? 'email-address' : 'default'}
-          autoComplete={
-            kind === 'email'
-              ? 'email'
-              : isPassword
-                ? newPassword
-                  ? 'new-password'
-                  : 'current-password'
-                : 'name'
-          }
+          autoComplete={autoComplete ?? defaultComplete}
           onFocus={() => setFocused(true)}
           onBlur={() => setFocused(false)}
         />
@@ -70,6 +86,11 @@ export default function TextField({
           </Pressable>
         ) : null}
       </View>
+      {error ? (
+        <Text style={styles.errorText} accessibilityRole="alert">
+          {error}
+        </Text>
+      ) : null}
     </View>
   );
 }
@@ -89,6 +110,7 @@ const styles = StyleSheet.create({
     color: colors.ink,
   },
   inputFocused: { borderColor: colors.teal, borderWidth: 2, paddingHorizontal: 15 },
+  inputError: { borderColor: colors.fieldError, borderWidth: 2, paddingHorizontal: 15 },
   inputPassword: { paddingRight: 72 },
   toggle: {
     position: 'absolute',
@@ -100,4 +122,5 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
   },
   toggleText: { fontFamily: fonts.bold, fontSize: 14, color: colors.teal },
+  errorText: { marginTop: 6, fontFamily: fonts.semiBold, fontSize: 13, color: colors.errorText },
 });
