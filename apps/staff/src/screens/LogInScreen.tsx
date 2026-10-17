@@ -8,10 +8,11 @@
 import { useState } from 'react';
 import { Pressable, Text, TextInput, View } from 'react-native';
 
+import type { Account } from '@griho/shared';
+import Brand from '../components/Brand';
 import { signIn } from '../fakeBackend';
 import { friendlyErrorMessage } from '../friendlyMessages';
 import { styles } from '../styles';
-import type { Account } from '@griho/shared';
 
 type Props = {
   onLoggedIn: (account: Account) => void;
@@ -39,44 +40,49 @@ export default function LogInScreen({ onLoggedIn, onGoToSignUp }: Props) {
 
   return (
     <View style={styles.screen}>
-      <Text style={styles.title}>Griho Staff</Text>
-      <Text style={styles.subtitle}>Log in for managers and guards</Text>
+      <View style={styles.card}>
+        <Brand />
+        <Text style={styles.eyebrow}>Staff log in</Text>
+        <Text style={styles.title}>Welcome back.</Text>
+        <Text style={styles.subtitle}>Log in for managers and guards.</Text>
 
-      <Text style={styles.label}>Email</Text>
-      <TextInput
-        style={styles.input}
-        value={email}
-        onChangeText={setEmail}
-        placeholder="you@example.com"
-        autoCapitalize="none"
-        autoCorrect={false}
-        keyboardType="email-address"
-        textContentType="emailAddress"
-      />
+        <Text style={styles.label}>Email</Text>
+        <TextInput
+          style={styles.input}
+          value={email}
+          onChangeText={setEmail}
+          placeholder="you@example.com"
+          placeholderTextColor="#9aa6a0"
+          autoCapitalize="none"
+          autoCorrect={false}
+          keyboardType="email-address"
+          textContentType="emailAddress"
+        />
 
-      <Text style={styles.label}>Password</Text>
-      <TextInput
-        style={styles.input}
-        value={password}
-        onChangeText={setPassword}
-        secureTextEntry
-        textContentType="password"
-      />
+        <Text style={styles.label}>Password</Text>
+        <TextInput
+          style={styles.input}
+          value={password}
+          onChangeText={setPassword}
+          secureTextEntry
+          textContentType="password"
+        />
 
-      {error ? <Text style={styles.error}>{error}</Text> : null}
+        {error ? <Text style={styles.error}>{error}</Text> : null}
 
-      <Pressable
-        style={[styles.button, busy && styles.buttonDisabled]}
-        onPress={handleLogIn}
-        disabled={busy}
-        accessibilityRole="button"
-      >
-        <Text style={styles.buttonText}>{busy ? 'Logging in...' : 'Log in'}</Text>
-      </Pressable>
+        <Pressable
+          style={[styles.button, busy && styles.buttonDisabled]}
+          onPress={handleLogIn}
+          disabled={busy}
+          accessibilityRole="button"
+        >
+          <Text style={styles.buttonText}>{busy ? 'Logging in...' : 'Log in'}</Text>
+        </Pressable>
 
-      <Pressable onPress={onGoToSignUp} accessibilityRole="button">
-        <Text style={styles.link}>New here? Make an account</Text>
-      </Pressable>
+        <Pressable onPress={onGoToSignUp} accessibilityRole="button">
+          <Text style={styles.link}>New here? Make an account</Text>
+        </Pressable>
+      </View>
     </View>
   );
 }
