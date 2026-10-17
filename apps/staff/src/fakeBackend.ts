@@ -78,3 +78,93 @@ export async function signOut(): Promise<void> {
 export function getCurrentAccount(): Account | null {
   return currentAccount;
 }
+
+// ---- Joining a building with a code ----
+
+// Fake codes the Staff app can accept. Only manager and guard codes are used here.
+// "remaining" is how many more people may use the code.
+type FakeCode = {
+  value: string;
+  role: 'manager' | 'guard';
+  building_name: string;
+  remaining: number;
+  status: 'active' | 'disabled';
+};
+
+const codes: FakeCode[] = [
+  {
+    value: 'GUARD-2468',
+    role: 'guard',
+    building_name: 'Rose Garden',
+    remaining: 3,
+    status: 'active',
+  },
+  {
+    value: 'MANAGER-1357',
+    role: 'manager',
+    building_name: 'Rose Garden',
+    remaining: 1,
+    status: 'active',
+  },
+  {
+    value: 'GUARD-0000',
+    role: 'guard',
+    building_name: 'Rose Garden',
+    remaining: 0,
+    status: 'active',
+  },
+  {
+    value: 'GUARD-OFF',
+    role: 'guard',
+    building_name: 'Rose Garden',
+    remaining: 5,
+    status: 'disabled',
+  },
+];
+
+// The join request each account has sent (keyed by account id).
+const pendingRequests = new Map<string, JoinRequestResult>();
+
+/** What the backend tells us after a join request is sent. */
+export type JoinRequestResult = {
+  request_id: string;
+  building_name: string;
+  role: 'manager' | 'guard';
+  flat_label: null;
+  status: 'pending';
+};
+
+/** Send a join request using a code the person typed. */
+export async function submitJoinRequest(codeValue: string): Promise<JoinRequestResult> {
+  if (!currentAccount) {
+    throw new Error('NOT_AUTHENTICATED');
+  }
+  const typed = codeValue.trim().toUpperCase();
+  const code = codes.find((c) => c.value === typed);
+  // A missing or switched-off code gets the same answer, so nobody can guess codes.
+  if (!code || code.status !== 'active') {
+    throw new Error('CODE_NOT_USABLE');
+  }
+  if (code.remaining <= 0) {
+    throw new Error('CODE_USED_UP');
+  }
+  if (pendingRequests.has(currentAccount.id)) {
+    throw new Error('ALREADY_PENDING');
+  }
+  // The code is NOT used up here. It is only used up when an owner approves.
+  const result: JoinRequestResult = {
+    request_id: `fake-request-${pendingRequests.size + 1}`,
+    building_name: code.building_name,
+    role: code.role,
+    flat_label: null,
+    status: 'pending',
+  };
+  pendingRequests.set(currentAccount.id, result);
+  return result;
+}
+
+/** The request the logged-in person is waiting on, or null if there is none. */
+export function getMyPendingRequest(): JoinRequestResult | null {
+  if (!currentAccount) return null;
+  return pendingRequests.get(currentAccount.id) ?? null;
+}
