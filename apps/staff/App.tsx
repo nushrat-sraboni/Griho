@@ -1,32 +1,53 @@
 // apps/staff/App.tsx
 //
-// The main screen of Griho Staff (managers and guards).
-// For now it is only a "hello" screen. It also reads one value from the shared
-// toolbox (@griho/shared) to prove the two projects are connected.
-// Real screens come later. Owned by Sraboni.
+// The main screen of Griho Staff (managers and guards). It decides which screen
+// to show: log in, sign up, or (for now) a simple "signed in" message. Real
+// screens for joining buildings come in later steps.
+// Owned by Sraboni.
 
 import { StatusBar } from 'expo-status-bar';
-import { StyleSheet, Text, View } from 'react-native';
-import { ERROR_CODES } from '@griho/shared';
+import { useState } from 'react';
+import { Text, View } from 'react-native';
+
+import type { Account } from '@griho/shared';
+import LogInScreen from './src/screens/LogInScreen';
+import SignUpScreen from './src/screens/SignUpScreen';
+import { styles } from './src/styles';
+
+type Screen = 'logIn' | 'signUp' | 'signedIn';
 
 export default function App() {
+  const [screen, setScreen] = useState<Screen>('logIn');
+  const [account, setAccount] = useState<Account | null>(null);
+
+  function handleLoggedIn(loggedIn: Account) {
+    setAccount(loggedIn);
+    setScreen('signedIn');
+  }
+
+  if (screen === 'signUp') {
+    return (
+      <>
+        <SignUpScreen onSignedUp={handleLoggedIn} onGoToLogIn={() => setScreen('logIn')} />
+        <StatusBar style="auto" />
+      </>
+    );
+  }
+
+  if (screen === 'signedIn' && account) {
+    return (
+      <View style={styles.screen}>
+        <Text style={styles.title}>Welcome, {account.display_name}</Text>
+        <Text style={styles.subtitle}>You are logged in to Griho Staff.</Text>
+        <StatusBar style="auto" />
+      </View>
+    );
+  }
+
   return (
-    <View style={styles.container}>
-      <Text style={styles.title}>Griho Staff</Text>
-      <Text>For managers and guards</Text>
-      <Text style={styles.small}>Shared toolbox connected: {ERROR_CODES.length} error codes</Text>
+    <>
+      <LogInScreen onLoggedIn={handleLoggedIn} onGoToSignUp={() => setScreen('signUp')} />
       <StatusBar style="auto" />
-    </View>
+    </>
   );
 }
-
-const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    backgroundColor: '#fff',
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  title: { fontSize: 24, fontWeight: '600', marginBottom: 8 },
-  small: { marginTop: 16, color: '#666' },
-});
