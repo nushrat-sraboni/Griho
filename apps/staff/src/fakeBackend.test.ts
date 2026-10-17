@@ -6,8 +6,11 @@
 
 import { describe, expect, it } from 'vitest';
 import {
+  approveMyRequestForTesting,
   getCurrentAccount,
+  getMyMembership,
   getMyPendingRequest,
+  leaveBuilding,
   signIn,
   signOut,
   signUp,
@@ -67,7 +70,7 @@ describe('fake join requests', () => {
     const request = await submitJoinRequest('guard-2468');
     expect(request.status).toBe('pending');
     expect(request.role).toBe('guard');
-    expect(request.building_name).toBe('Rose Garden');
+    expect(request.building_name).toBe('Lakeview Heights');
     expect(getMyPendingRequest()?.request_id).toBe(request.request_id);
     await signOut();
   });
@@ -100,5 +103,65 @@ describe('fake join requests', () => {
 
   it('needs someone logged in to send a request', async () => {
     await expect(submitJoinRequest('GUARD-2468')).rejects.toThrow('NOT_AUTHENTICATED');
+  });
+});
+
+describe('fake approval and leaving', () => {
+  it('moves an approved request into a membership', async () => {
+    await signUp({
+      email: 'approved.guard@staff.test',
+      password: 'x',
+      displayName: 'Approved Guard',
+    });
+    await submitJoinRequest('GUARD-2468');
+    const membership = await approveMyRequestForTesting();
+    expect(membership.role).toBe('guard');
+    expect(membership.building_name).toBe('Lakeview Heights');
+    expect(membership.address).toBe('House 18, Road 7, Dhaka');
+    expect(getMyMembership()?.role).toBe('guard');
+    expect(getMyPendingRequest()).toBeNull();
+    await signOut();
+  });
+
+  it('refuses a new join request from someone who is already a member', async () => {
+    await signUp({
+      email: 'already.member@staff.test',
+      password: 'x',
+      displayName: 'Already Member',
+    });
+    await submitJoinRequest('GUARD-2468');
+    await approveMyRequestForTesting();
+    await expect(submitJoinRequest('GUARD-2468')).rejects.toThrow('ALREADY_MEMBER');
+    await signOut();
+  });
+
+  it('has nothing to approve when no request was sent', async () => {
+    await signUp({ email: 'no.request@staff.test', password: 'x', displayName: 'No Request' });
+    await expect(approveMyRequestForTesting()).rejects.toThrow('NOT_FOUND');
+    await signOut();
+  });
+
+  it('refuses to leave when the typed name does not match', async () => {
+    await signUp({ email: 'wrong.name@staff.test', password: 'x', displayName: 'Wrong Name' });
+    await submitJoinRequest('GUARD-2468');
+    await approveMyRequestForTesting();
+    await expect(leaveBuilding('Someone Else')).rejects.toThrow('TYPED_NAME_MISMATCH');
+    expect(getMyMembership()).not.toBeNull();
+    await signOut();
+  });
+
+  it('lets a member leave when they type their own name, ignoring capitals and spaces', async () => {
+    await signUp({ email: 'leaver@staff.test', password: 'x', displayName: 'Leaver Person' });
+    await submitJoinRequest('GUARD-2468');
+    await approveMyRequestForTesting();
+    await expect(leaveBuilding('  leaver person ')).resolves.toEqual({ result: 'left' });
+    expect(getMyMembership()).toBeNull();
+    await signOut();
+  });
+
+  it('says NOT_A_MEMBER when leaving without a building', async () => {
+    await signUp({ email: 'no.building@staff.test', password: 'x', displayName: 'No Building' });
+    await expect(leaveBuilding('No Building')).rejects.toThrow('NOT_A_MEMBER');
+    await signOut();
   });
 });
