@@ -1,0 +1,32 @@
+// apps/staff/src/text.ts
+//
+// Two small helpers for showing people and times in plain words:
+//   - timeAgo turns a date into "12 min ago", "1 hour ago", and so on.
+//   - initialsOf turns a name into its first letters, like "Karim Hossain" -> "KH".
+// They have no screens in them, so they are easy to test. Owned by Sraboni.
+
+/** A date as plain words, like "12 min ago". `now` can be given for testing. */
+export function timeAgo(iso: string, now: number = Date.now()): string {
+  const minutes = Math.max(0, Math.round((now - Date.parse(iso)) / 60000));
+  if (minutes < 1) return 'Just now';
+  if (minutes < 60) return `${minutes} min ago`;
+  const hours = Math.round(minutes / 60);
+  if (hours < 24) return hours === 1 ? '1 hour ago' : `${hours} hours ago`;
+  const days = Math.round(hours / 24);
+  return days === 1 ? '1 day ago' : `${days} days ago`;
+}
+
+/** The first letters of up to two words of a name, in capitals. */
+export function initialsOf(name: string): string {
+  const words = name.trim().split(/\s+/).filter(Boolean);
+  if (words.length === 0) return '?';
+  const letters = words.length === 1 ? words[0].slice(0, 2) : words[0][0] + words[1][0];
+  return letters.toUpperCase();
+}
+
+/** "Good morning", "Good afternoon", or "Good evening" for an hour from 0 to 23. */
+export function greetingFor(hour: number): string {
+  if (hour < 12) return 'Good morning';
+  if (hour < 18) return 'Good afternoon';
+  return 'Good evening';
+}

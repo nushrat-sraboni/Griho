@@ -2,8 +2,10 @@
 //
 // The Griho logo row: a green square holding four small tiles (one of them gold),
 // then the words "Griho Staff". It sits at the top of every screen, like the logo
-// in the Griho design. Owned by Sraboni.
+// in the Griho design. Manager screens also pass something for the far right, such
+// as the person's initials badge. Owned by Sraboni.
 
+import type { ReactNode } from 'react';
 import { StyleSheet, Text, View } from 'react-native';
 
 import { colors } from '../styles';
@@ -13,24 +15,33 @@ function Tile({ gold }: { gold?: boolean }) {
   return <View style={[local.tile, gold && { backgroundColor: colors.goldDot }]} />;
 }
 
-export default function Brand() {
+export default function Brand({ right }: { right?: ReactNode }) {
   return (
     <View style={local.row} accessibilityRole="header">
-      <View style={local.mark}>
-        <Tile />
-        <Tile gold />
-        <Tile />
-        <Tile />
+      <View style={local.left}>
+        <View style={local.mark}>
+          <Tile />
+          <Tile gold />
+          <Tile />
+          <Tile />
+        </View>
+        <Text style={local.name}>
+          <Text style={local.bold}>Griho</Text> <Text style={local.light}>Staff</Text>
+        </Text>
       </View>
-      <Text style={local.name}>
-        <Text style={local.bold}>Griho</Text> <Text style={local.light}>Staff</Text>
-      </Text>
+      {right}
     </View>
   );
 }
 
 const local = StyleSheet.create({
-  row: { flexDirection: 'row', alignItems: 'center', marginBottom: 24 },
+  row: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    marginBottom: 24,
+  },
+  left: { flexDirection: 'row', alignItems: 'center' },
   mark: {
     width: 40,
     height: 40,
