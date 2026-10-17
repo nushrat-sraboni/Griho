@@ -1,32 +1,65 @@
 // apps/home/App.tsx
 //
-// The main screen of Griho Home (owners and tenants).
-// For now it is only a "hello" screen. It also reads one value from the shared
-// toolbox (@griho/shared) to prove the two projects are connected.
-// Real screens come later. Owned by Bishal.
+// The main entry of Griho Home (owners and tenants). It loads the app's font,
+// then decides which screen to show: log in, sign up, or the signed-in home
+// screen. Real building screens come in later steps.
+// Owned by Bishal.
 
+import {
+  PlusJakartaSans_400Regular,
+  PlusJakartaSans_500Medium,
+  PlusJakartaSans_600SemiBold,
+  PlusJakartaSans_700Bold,
+  PlusJakartaSans_800ExtraBold,
+  useFonts,
+} from '@expo-google-fonts/plus-jakarta-sans';
 import { StatusBar } from 'expo-status-bar';
-import { StyleSheet, Text, View } from 'react-native';
-import { ERROR_CODES } from '@griho/shared';
+import { useState } from 'react';
+import { SafeAreaProvider } from 'react-native-safe-area-context';
+import type { Account } from '@griho/shared';
+
+import { api } from './src/api';
+import HomeScreen from './src/screens/HomeScreen';
+import LogInScreen from './src/screens/LogInScreen';
+import SignUpScreen from './src/screens/SignUpScreen';
+
+type ScreenName = 'logIn' | 'signUp' | 'home';
 
 export default function App() {
+  const [fontsLoaded] = useFonts({
+    PlusJakartaSans_400Regular,
+    PlusJakartaSans_500Medium,
+    PlusJakartaSans_600SemiBold,
+    PlusJakartaSans_700Bold,
+    PlusJakartaSans_800ExtraBold,
+  });
+  const [screen, setScreen] = useState<ScreenName>('logIn');
+  const [account, setAccount] = useState<Account | null>(null);
+
+  function handleLoggedIn(loggedIn: Account) {
+    setAccount(loggedIn);
+    setScreen('home');
+  }
+
+  async function handleLogOut() {
+    await api.signOut();
+    setAccount(null);
+    setScreen('logIn');
+  }
+
+  // Wait a moment for the font to load, so text never flashes in the wrong font.
+  if (!fontsLoaded) return null;
+
   return (
-    <View style={styles.container}>
-      <Text style={styles.title}>Griho Home</Text>
-      <Text>For owners and tenants</Text>
-      <Text style={styles.small}>Shared toolbox connected: {ERROR_CODES.length} error codes</Text>
-      <StatusBar style="auto" />
-    </View>
+    <SafeAreaProvider>
+      {screen === 'home' && account ? (
+        <HomeScreen account={account} onLogOut={handleLogOut} />
+      ) : screen === 'signUp' ? (
+        <SignUpScreen onSignedUp={handleLoggedIn} onGoToLogIn={() => setScreen('logIn')} />
+      ) : (
+        <LogInScreen onLoggedIn={handleLoggedIn} onGoToSignUp={() => setScreen('signUp')} />
+      )}
+      <StatusBar style="dark" />
+    </SafeAreaProvider>
   );
 }
-
-const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    backgroundColor: '#fff',
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  title: { fontSize: 24, fontWeight: '600', marginBottom: 8 },
-  small: { marginTop: 16, color: '#666' },
-});
