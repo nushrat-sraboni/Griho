@@ -1,52 +1,61 @@
 // apps/staff/App.tsx
 //
 // The main screen of Griho Staff (managers and guards). It decides which screen
-// to show: log in, sign up, or (for now) a simple "signed in" message. Real
-// screens for joining buildings come in later steps.
+// to show: log in, sign up, join a building with a code, or the waiting screen
+// while the request is answered. Later steps add the real building screens.
 // Owned by Sraboni.
 
 import { StatusBar } from 'expo-status-bar';
 import { useState } from 'react';
-import { Text, View } from 'react-native';
 
-import type { Account } from '@griho/shared';
+import { getMyPendingRequest, signOut, type JoinRequestResult } from './src/fakeBackend';
+import JoinBuildingScreen from './src/screens/JoinBuildingScreen';
 import LogInScreen from './src/screens/LogInScreen';
 import SignUpScreen from './src/screens/SignUpScreen';
-import { styles } from './src/styles';
+import WaitingScreen from './src/screens/WaitingScreen';
 
-type Screen = 'logIn' | 'signUp' | 'signedIn';
+type Screen = 'logIn' | 'signUp' | 'join' | 'waiting';
 
 export default function App() {
   const [screen, setScreen] = useState<Screen>('logIn');
-  const [account, setAccount] = useState<Account | null>(null);
+  const [request, setRequest] = useState<JoinRequestResult | null>(null);
 
-  function handleLoggedIn(loggedIn: Account) {
-    setAccount(loggedIn);
-    setScreen('signedIn');
+  // After log-in or sign-up: show the waiting screen if a request is already
+  // pending, otherwise ask for a code.
+  function handleLoggedIn() {
+    const pending = getMyPendingRequest();
+    setRequest(pending);
+    setScreen(pending ? 'waiting' : 'join');
   }
 
+  async function handleLogOut() {
+    await signOut();
+    setRequest(null);
+    setScreen('logIn');
+  }
+
+  let content;
   if (screen === 'signUp') {
-    return (
-      <>
-        <SignUpScreen onSignedUp={handleLoggedIn} onGoToLogIn={() => setScreen('logIn')} />
-        <StatusBar style="auto" />
-      </>
+    content = <SignUpScreen onSignedUp={handleLoggedIn} onGoToLogIn={() => setScreen('logIn')} />;
+  } else if (screen === 'join') {
+    content = (
+      <JoinBuildingScreen
+        onRequestSent={(sent) => {
+          setRequest(sent);
+          setScreen('waiting');
+        }}
+        onLogOut={handleLogOut}
+      />
     );
-  }
-
-  if (screen === 'signedIn' && account) {
-    return (
-      <View style={styles.screen}>
-        <Text style={styles.title}>Welcome, {account.display_name}</Text>
-        <Text style={styles.subtitle}>You are logged in to Griho Staff.</Text>
-        <StatusBar style="auto" />
-      </View>
-    );
+  } else if (screen === 'waiting' && request) {
+    content = <WaitingScreen request={request} onLogOut={handleLogOut} />;
+  } else {
+    content = <LogInScreen onLoggedIn={handleLoggedIn} onGoToSignUp={() => setScreen('signUp')} />;
   }
 
   return (
     <>
-      <LogInScreen onLoggedIn={handleLoggedIn} onGoToSignUp={() => setScreen('signUp')} />
+      {content}
       <StatusBar style="auto" />
     </>
   );
