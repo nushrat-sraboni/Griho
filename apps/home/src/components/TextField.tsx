@@ -14,8 +14,8 @@ type Props = {
   label: string;
   value: string;
   onChangeText: (text: string) => void;
-  /** 'password' hides the text and adds the Show / Hide button. */
-  kind?: 'text' | 'email' | 'password';
+  /** 'password' hides the text and adds the Show / Hide button. 'number' shows a number keypad. */
+  kind?: 'text' | 'email' | 'password' | 'number';
   placeholder?: string;
   /** For password boxes: is this a brand new password (sign up) or an existing one (log in)? */
   newPassword?: boolean;
@@ -52,7 +52,9 @@ export default function TextField({
         ? newPassword
           ? 'new-password'
           : 'current-password'
-        : 'name';
+        : kind === 'number'
+          ? 'off'
+          : 'name';
 
   return (
     <View style={styles.wrapper}>
@@ -73,7 +75,9 @@ export default function TextField({
           secureTextEntry={isPassword && !shown}
           autoCapitalize={capitalize ?? (kind === 'text' ? 'words' : 'none')}
           autoCorrect={false}
-          keyboardType={kind === 'email' ? 'email-address' : 'default'}
+          keyboardType={
+            kind === 'email' ? 'email-address' : kind === 'number' ? 'number-pad' : 'default'
+          }
           autoComplete={autoComplete ?? defaultComplete}
           onFocus={() => setFocused(true)}
           onBlur={() => setFocused(false)}
