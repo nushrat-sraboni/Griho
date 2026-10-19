@@ -49,6 +49,10 @@ export const colors = {
   successText: '#0E4A3F',
   /** Red border around a text box that needs fixing. */
   fieldError: '#B3261E',
+  /** A pale green behind a choice that is picked. */
+  selectedBackground: '#F1F7F4',
+  /** The red "Delete" button. */
+  danger: '#B3261E',
   /** A pale square (a window with the light off). */
   windowOff: '#E1ECE9',
   /** Red message box. */

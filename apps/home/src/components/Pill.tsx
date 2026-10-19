@@ -1,21 +1,23 @@
 // apps/home/src/components/Pill.tsx
 //
 // A small rounded label such as "Owner", "Tenant · Flat 4B", "Active" or
-// "Soon". The tone sets its colors: teal for roles, amber for "Active", grey
-// for things that are not ready yet. Owned by Bishal.
+// "Soon". The tone sets its colors: teal for roles, amber for notes and
+// warnings, grey for things that are off or not ready, green for "active".
+// Owned by Bishal.
 
 import { StyleSheet, Text, View } from 'react-native';
 
 import { colors, fonts } from '../theme';
 
-type Tone = 'teal' | 'amber' | 'grey';
+export type PillTone = 'teal' | 'amber' | 'grey' | 'green';
 
-type Props = { text: string; tone?: Tone };
+type Props = { text: string; tone?: PillTone };
 
-const LOOK: Record<Tone, { background: string; text: string }> = {
+const LOOK: Record<PillTone, { background: string; text: string }> = {
   teal: { background: colors.pillTeal, text: colors.pillTealText },
   amber: { background: colors.pillAmber, text: colors.pillAmberText },
   grey: { background: colors.pillGrey, text: colors.pillGreyText },
+  green: { background: colors.successBackground, text: colors.successText },
 };
 
 export default function Pill({ text, tone = 'teal' }: Props) {
