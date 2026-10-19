@@ -25,6 +25,8 @@ type Props = {
   capitalize?: 'none' | 'words' | 'sentences';
   /** Tells the phone what to suggest. Leave out for the sensible default. */
   autoComplete?: TextInputProps['autoComplete'];
+  /** A short grey help sentence under the box. Hidden while an error is showing. */
+  hint?: string;
 };
 
 export default function TextField({
@@ -37,6 +39,7 @@ export default function TextField({
   error,
   capitalize,
   autoComplete,
+  hint,
 }: Props) {
   const [focused, setFocused] = useState(false);
   const [shown, setShown] = useState(false);
@@ -90,6 +93,8 @@ export default function TextField({
         <Text style={styles.errorText} accessibilityRole="alert">
           {error}
         </Text>
+      ) : hint ? (
+        <Text style={styles.hintText}>{hint}</Text>
       ) : null}
     </View>
   );
@@ -123,4 +128,11 @@ const styles = StyleSheet.create({
   },
   toggleText: { fontFamily: fonts.bold, fontSize: 14, color: colors.teal },
   errorText: { marginTop: 6, fontFamily: fonts.semiBold, fontSize: 13, color: colors.errorText },
+  hintText: {
+    marginTop: 6,
+    fontFamily: fonts.regular,
+    fontSize: 13,
+    lineHeight: 18,
+    color: colors.muted,
+  },
 });
