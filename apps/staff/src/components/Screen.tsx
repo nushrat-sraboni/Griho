@@ -11,7 +11,7 @@ import { KeyboardAvoidingView, Platform, ScrollView, View } from 'react-native';
 import { colors, styles } from '../styles';
 
 // One circle: sized, placed, and outlined. The biggest one is also lightly filled.
-function Ring({
+export function Ring({
   size,
   top,
   right,
@@ -40,6 +40,17 @@ function Ring({
   );
 }
 
+/** The three soft circles in the top-right corner of every screen. */
+export function Rings() {
+  return (
+    <>
+      <Ring size={254} top={-55} right={-84} filled />
+      <Ring size={190} top={-23} right={-52} />
+      <Ring size={128} top={8} right={-21} />
+    </>
+  );
+}
+
 export default function Screen({
   children,
   footer,
@@ -50,9 +61,7 @@ export default function Screen({
 }) {
   return (
     <View style={styles.screen}>
-      <Ring size={254} top={-55} right={-84} filled />
-      <Ring size={190} top={-23} right={-52} />
-      <Ring size={128} top={8} right={-21} />
+      <Rings />
       <KeyboardAvoidingView
         style={{ flex: 1 }}
         behavior={Platform.OS === 'ios' ? 'padding' : undefined}

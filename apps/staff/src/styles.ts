@@ -5,7 +5,7 @@
 // banner, soft white cards with very round corners, and heavy dark-green headlines.
 // Keeping them here means every screen looks the same. Owned by Sraboni.
 
-import { StyleSheet } from 'react-native';
+import { Platform, StatusBar, StyleSheet } from 'react-native';
 
 // The colours from the design, in one place.
 export const colors = {
@@ -30,11 +30,14 @@ export const colors = {
   error: '#b42318',
 };
 
+// The gap at the top of a screen, so content stays clear of the phone's clock and notch.
+export const TOP_INSET = Platform.OS === 'ios' ? 54 : (StatusBar.currentHeight ?? 24) + 12;
+
 export const styles = StyleSheet.create({
   // The whole screen: cream background.
   screen: { flex: 1, backgroundColor: colors.cream },
   // The scrolling content: sits on top of the circles.
-  content: { flexGrow: 1, paddingHorizontal: 24, paddingTop: 28, paddingBottom: 24 },
+  content: { flexGrow: 1, paddingHorizontal: 24, paddingTop: TOP_INSET, paddingBottom: 24 },
   // A soft white card.
   card: {
     backgroundColor: colors.white,

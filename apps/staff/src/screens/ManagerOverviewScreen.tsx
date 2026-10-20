@@ -15,11 +15,12 @@ import Eyebrow from '../components/Eyebrow';
 import HeroCard from '../components/HeroCard';
 import LeaveSection from '../components/LeaveSection';
 import { getManagerCounts, type Membership } from '../fakeBackend';
+import { listConversations } from '../fakeMessages';
 import { friendlyErrorMessage } from '../friendlyMessages';
 import { colors, styles } from '../styles';
 import { greetingFor } from '../text';
 
-type Counts = Awaited<ReturnType<typeof getManagerCounts>>;
+type Counts = Awaited<ReturnType<typeof getManagerCounts>> & { chats: number };
 
 type Props = {
   displayName: string;
@@ -67,9 +68,9 @@ export default function ManagerOverviewScreen({
 
   useEffect(() => {
     let cancelled = false;
-    getManagerCounts()
-      .then((result) => {
-        if (!cancelled) setCounts(result);
+    Promise.all([getManagerCounts(), listConversations()])
+      .then(([result, chats]) => {
+        if (!cancelled) setCounts({ ...result, chats: chats.length });
       })
       .catch((caught) => {
         if (!cancelled) setError(friendlyErrorMessage(caught as { message?: string }));

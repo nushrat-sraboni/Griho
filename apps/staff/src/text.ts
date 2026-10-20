@@ -39,3 +39,49 @@ export function greetingFor(hour: number): string {
 export function namesMatch(typed: string, actual: string): boolean {
   return typed.trim().toLowerCase() === actual.trim().toLowerCase();
 }
+
+// ---- Times for the chat screens ----
+
+const MONTHS = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+const WEEKDAYS = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
+
+// The start of a date's day in the phone's local time, as a number of milliseconds.
+function startOfDay(date: Date): number {
+  return new Date(date.getFullYear(), date.getMonth(), date.getDate()).getTime();
+}
+
+// How many calendar days ago a date was (0 means today).
+function daysAgo(iso: string, now: number): number {
+  const day = 24 * 60 * 60 * 1000;
+  return Math.round((startOfDay(new Date(now)) - startOfDay(new Date(iso))) / day);
+}
+
+/** The time of day, like "6:40 PM", in the phone's local time. */
+export function clockTime(iso: string): string {
+  const date = new Date(iso);
+  const hours = date.getHours();
+  const twelve = hours % 12 === 0 ? 12 : hours % 12;
+  return `${twelve}:${String(date.getMinutes()).padStart(2, '0')} ${hours < 12 ? 'AM' : 'PM'}`;
+}
+
+/** The little heading above a day of messages: "TODAY", "YESTERDAY", or "12 OCT". */
+export function dayLabel(iso: string, now: number = Date.now()): string {
+  const ago = daysAgo(iso, now);
+  if (ago <= 0) return 'TODAY';
+  if (ago === 1) return 'YESTERDAY';
+  const date = new Date(iso);
+  return `${date.getDate()} ${MONTHS[date.getMonth()]}`.toUpperCase();
+}
+
+/**
+ * The time shown on a row of the chat list: the clock time for today, "Yesterday",
+ * a short weekday like "Mon" for the last week, otherwise a date like "12 Oct".
+ */
+export function chatListTime(iso: string, now: number = Date.now()): string {
+  const ago = daysAgo(iso, now);
+  if (ago <= 0) return clockTime(iso);
+  if (ago === 1) return 'Yesterday';
+  const date = new Date(iso);
+  if (ago < 7) return WEEKDAYS[date.getDay()];
+  return `${date.getDate()} ${MONTHS[date.getMonth()]}`;
+}

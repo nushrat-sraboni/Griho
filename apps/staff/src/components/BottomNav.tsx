@@ -1,35 +1,44 @@
 // apps/staff/src/components/BottomNav.tsx
 //
-// The bottom menu of the manager workspace: Overview, Access, Guards, and Messages.
-// The tab you are on is shown on a pale green pill, like the Griho Staff design.
-// (The design also has little icons. Those need a drawing library the Staff app
-// does not have yet, so for now the tabs show words only.) Owned by Sraboni.
+// The bottom menu of Griho Staff. A manager sees four tabs (Overview, Access, Guards,
+// Messages) and a guard sees two (Home, Messages). The tab you are on is shown on a
+// pale green pill, like the Griho Staff design. (The design also has little icons.
+// Those need a drawing library the Staff app does not have yet, so for now the tabs
+// show words only.) Owned by Sraboni.
 
 import { Pressable, StyleSheet, Text, View } from 'react-native';
 
 import { colors } from '../styles';
 
 export type ManagerTab = 'overview' | 'access' | 'guards' | 'messages';
+export type GuardTab = 'home' | 'messages';
 
-const TABS: { id: ManagerTab; label: string }[] = [
+export const MANAGER_TABS: { id: ManagerTab; label: string }[] = [
   { id: 'overview', label: 'Overview' },
   { id: 'access', label: 'Access' },
   { id: 'guards', label: 'Guards' },
   { id: 'messages', label: 'Messages' },
 ];
 
-type Props = {
-  current: ManagerTab;
-  onChange: (tab: ManagerTab) => void;
-  /** A small number shown on the Access tab, like the count of waiting requests. */
-  accessBadge?: number;
+export const GUARD_TABS: { id: GuardTab; label: string }[] = [
+  { id: 'home', label: 'Home' },
+  { id: 'messages', label: 'Messages' },
+];
+
+type Props<T extends string> = {
+  tabs: { id: T; label: string }[];
+  current: T;
+  onChange: (tab: T) => void;
+  /** A small number shown on one tab, like the count of waiting requests. */
+  badges?: Partial<Record<T, number>>;
 };
 
-export default function BottomNav({ current, onChange, accessBadge }: Props) {
+export default function BottomNav<T extends string>({ tabs, current, onChange, badges }: Props<T>) {
   return (
     <View style={local.bar} accessibilityRole="tablist">
-      {TABS.map((tab) => {
+      {tabs.map((tab) => {
         const active = tab.id === current;
+        const badge = badges?.[tab.id];
         return (
           <Pressable
             key={tab.id}
@@ -40,9 +49,9 @@ export default function BottomNav({ current, onChange, accessBadge }: Props) {
             accessibilityLabel={tab.label}
           >
             <Text style={[local.label, active && local.labelActive]}>{tab.label}</Text>
-            {tab.id === 'access' && accessBadge ? (
+            {badge ? (
               <View style={local.badge}>
-                <Text style={local.badgeText}>{accessBadge}</Text>
+                <Text style={local.badgeText}>{badge}</Text>
               </View>
             ) : null}
           </Pressable>
