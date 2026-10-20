@@ -2,20 +2,19 @@
 //
 // Everything a manager sees once they belong to a building: the four screens of the
 // manager workspace (Overview, Access, Guards, Messages) and the bottom menu that
-// switches between them. Overview, Access, and Guards are built. Messages shows a
-// short "coming next" note for now. When something changes on the Access screen
-// (a request answered, a code made), the Overview numbers and the little badge on
-// the Access tab are read again. Owned by Sraboni.
+// switches between them. When something changes (a request answered, a code made, a
+// guard removed, a message sent), the Overview numbers and the little badge on the
+// Access tab are read again. Owned by Sraboni.
 
 import { useEffect, useState } from 'react';
 
-import BottomNav, { type ManagerTab } from '../components/BottomNav';
+import BottomNav, { MANAGER_TABS, type ManagerTab } from '../components/BottomNav';
 import Screen from '../components/Screen';
 import { getManagerCounts, type Membership } from '../fakeBackend';
 import AccessScreen from './AccessScreen';
-import ComingNextScreen from './ComingNextScreen';
 import GuardsScreen from './GuardsScreen';
 import ManagerOverviewScreen from './ManagerOverviewScreen';
+import MessagesFlow from './MessagesFlow';
 
 type Props = {
   displayName: string;
@@ -44,8 +43,25 @@ export default function ManagerWorkspace({ displayName, membership, onLeft, onLo
     };
   }, [refreshKey]);
 
+  const changed = () => setRefreshKey((k) => k + 1);
+
+  const nav = (
+    <BottomNav tabs={MANAGER_TABS} current={tab} onChange={setTab} badges={{ access: waiting }} />
+  );
+
+  if (tab === 'messages') {
+    return (
+      <MessagesFlow
+        displayName={displayName}
+        buildingName={membership.building_name}
+        footer={nav}
+        onChanged={changed}
+      />
+    );
+  }
+
   return (
-    <Screen footer={<BottomNav current={tab} onChange={setTab} accessBadge={waiting} />}>
+    <Screen footer={nav}>
       {tab === 'overview' ? (
         <ManagerOverviewScreen
           displayName={displayName}
@@ -56,22 +72,12 @@ export default function ManagerWorkspace({ displayName, membership, onLeft, onLo
           onLogOut={onLogOut}
         />
       ) : null}
-      {tab === 'access' ? (
-        <AccessScreen displayName={displayName} onChanged={() => setRefreshKey((k) => k + 1)} />
-      ) : null}
+      {tab === 'access' ? <AccessScreen displayName={displayName} onChanged={changed} /> : null}
       {tab === 'guards' ? (
         <GuardsScreen
           displayName={displayName}
           buildingName={membership.building_name}
-          onChanged={() => setRefreshKey((k) => k + 1)}
-        />
-      ) : null}
-      {tab === 'messages' ? (
-        <ComingNextScreen
-          displayName={displayName}
-          eyebrow="Private communication"
-          title="Messages."
-          text="Chats with owners and tenants are coming in a later step."
+          onChanged={changed}
         />
       ) : null}
     </Screen>

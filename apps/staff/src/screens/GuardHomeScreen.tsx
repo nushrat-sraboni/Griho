@@ -4,8 +4,9 @@
 // design: a welcome line, a green banner with the building name and address, the
 // guard's role and access, a note that guards have nothing else to do, and the
 // "Leave this building" and "Log out" buttons. Leaving asks the guard to type
-// their own name first. Owned by Sraboni.
+// their own name first. The bottom menu (Home and Messages) is passed in. Owned by Sraboni.
 
+import type { ReactNode } from 'react';
 import { StyleSheet, Text, View } from 'react-native';
 
 import Brand from '../components/Brand';
@@ -21,6 +22,8 @@ type Props = {
   membership: Membership;
   onLeft: () => void;
   onLogOut: () => void;
+  /** The bottom menu, shown at the bottom of the screen. */
+  footer?: ReactNode;
 };
 
 // One row of the little "role and access" card: a title, a grey line, and a badge.
@@ -36,11 +39,17 @@ function InfoRow({ title, detail, badge }: { title: string; detail: string; badg
   );
 }
 
-export default function GuardHomeScreen({ displayName, membership, onLeft, onLogOut }: Props) {
+export default function GuardHomeScreen({
+  displayName,
+  membership,
+  onLeft,
+  onLogOut,
+  footer,
+}: Props) {
   const firstName = displayName.trim().split(' ')[0];
 
   return (
-    <Screen>
+    <Screen footer={footer}>
       <Brand />
       <Eyebrow>Guard</Eyebrow>
       <Text style={styles.title}>Welcome, {firstName}.</Text>
@@ -59,7 +68,7 @@ export default function GuardHomeScreen({ displayName, membership, onLeft, onLog
       </View>
 
       <Text style={styles.note}>
-        Guards do not send or receive messages. There is nothing else for you to do here for now.
+        You can message anyone in your building, and anyone can message you. Open Messages to start.
       </Text>
 
       <View style={styles.spacer} />

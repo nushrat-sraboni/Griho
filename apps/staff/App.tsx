@@ -5,8 +5,8 @@
 //   - log in or sign up, when nobody is logged in
 //   - the join screen, when the person belongs to no building yet
 //   - the waiting screen, while their join request is being answered
-//   - the guard home screen or the manager workspace, once they belong to a building
-// Later steps add the real manager screens. Owned by Sraboni.
+//   - the guard workspace or the manager workspace, once they belong to a building
+// Owned by Sraboni.
 
 import { StatusBar } from 'expo-status-bar';
 import { useState } from 'react';
@@ -20,7 +20,7 @@ import {
   type JoinRequestResult,
   type Membership,
 } from './src/fakeBackend';
-import GuardHomeScreen from './src/screens/GuardHomeScreen';
+import GuardWorkspace from './src/screens/GuardWorkspace';
 import JoinBuildingScreen from './src/screens/JoinBuildingScreen';
 import LogInScreen from './src/screens/LogInScreen';
 import ManagerWorkspace from './src/screens/ManagerWorkspace';
@@ -97,7 +97,7 @@ export default function App() {
           onLogOut={handleLogOut}
         />
       ) : (
-        <GuardHomeScreen
+        <GuardWorkspace
           displayName={account.display_name}
           membership={membership}
           onLeft={goBackToJoin}

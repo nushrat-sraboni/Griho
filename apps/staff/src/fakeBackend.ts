@@ -237,9 +237,6 @@ let guards: MemberListItem[] = [];
 let codeCounter = 0;
 let guardCounter = 0;
 
-// A sample number, until the Messages screen exists.
-const OPEN_CHATS = 4;
-
 // Makes one guard for the pretend list. Each gets its own account and membership id.
 function makeGuard(name: string): MemberListItem {
   guardCounter += 1;
@@ -323,14 +320,12 @@ export async function getManagerCounts(): Promise<{
   guards: number;
   waiting: number;
   codesInUse: number;
-  chats: number;
 }> {
   requireManager();
   return {
     guards: guards.length,
     waiting: guardRequests.filter((r) => r.status === 'pending').length,
     codesInUse: guardCodes.filter((c) => c.status === 'active').length,
-    chats: OPEN_CHATS,
   };
 }
 
@@ -442,4 +437,12 @@ export async function removeMember(membershipId: string, typedName: string): Pro
   }
   guards = guards.filter((g) => g.membership_id !== membershipId);
   return { ok: true };
+}
+
+/**
+ * The guards of the building, with no permission check. The pretend messaging code
+ * (fakeMessages.ts) uses it to know who can be messaged. Screens never call it.
+ */
+export function getKnownGuards(): MemberListItem[] {
+  return guards.map((g) => ({ ...g }));
 }
