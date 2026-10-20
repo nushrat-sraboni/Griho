@@ -68,6 +68,7 @@ export default function App() {
   } else if (screen === 'join') {
     content = (
       <JoinBuildingScreen
+        displayName={account?.display_name ?? ''}
         onRequestSent={(sent) => {
           setRequest(sent);
           setScreen('waiting');
@@ -78,6 +79,7 @@ export default function App() {
   } else if (screen === 'waiting' && request) {
     content = (
       <WaitingScreen
+        displayName={account?.display_name ?? ''}
         request={request}
         onLogOut={handleLogOut}
         onPretendApproved={__DEV__ ? handlePretendApproved : undefined}

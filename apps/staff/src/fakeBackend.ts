@@ -15,6 +15,7 @@
 // Delete this file when the real backend is ready. Owned by Sraboni.
 
 import type { Account, CodeInfo, MemberListItem, PendingRequestForApprover } from '@griho/shared';
+import { namesMatch } from './text';
 
 // Fake accounts to log in with while we build. Emails end in ".test" on purpose,
 // so they can never be real people's addresses.
@@ -22,6 +23,9 @@ const accounts: Account[] = [
   { id: 'fake-staff-1', app: 'staff', display_name: 'Sraboni', email: 'sraboni@staff.test' },
   { id: 'fake-home-1', app: 'home', display_name: 'Bishal', email: 'bishal@home.test' },
 ];
+
+// Counts the accounts made so far, so every new account gets its own id even after some are deleted.
+let accountCounter = accounts.length;
 
 // The account that is logged in right now (null means nobody is logged in).
 let currentAccount: Account | null = null;
@@ -59,7 +63,7 @@ export async function signUp(input: {
     throw new Error('User already registered');
   }
   const account: Account = {
-    id: `fake-staff-${accounts.length + 1}`,
+    id: `fake-staff-${++accountCounter}`,
     app: 'staff',
     display_name: displayName,
     email,
@@ -213,6 +217,34 @@ export async function leaveBuilding(typedName: string): Promise<{ result: 'left'
   }
   memberships.delete(currentAccount.id);
   return { result: 'left' };
+}
+
+/**
+ * Delete my account for good. The person must type their own name to confirm (capital
+ * letters and spaces at the ends are ignored, like the real backend). It removes their
+ * waiting request and their place in the building, then removes the account, so the
+ * email can be used again. A manager's guards stay. Their old messages would show as
+ * "Deleted account" to others. Returns how many buildings were deleted: always 0 here,
+ * because only the last owner leaving deletes a building, and that happens in the Home app.
+ */
+export async function deleteAccount(
+  typedName: string,
+): Promise<{ ok: true; buildings_deleted: number }> {
+  if (!currentAccount) {
+    throw new Error('NOT_AUTHENTICATED');
+  }
+  if (!namesMatch(typedName, currentAccount.display_name)) {
+    throw new Error('TYPED_NAME_MISMATCH');
+  }
+  const id = currentAccount.id;
+  memberships.delete(id);
+  pendingRequests.delete(id);
+  const index = accounts.findIndex((a) => a.id === id);
+  if (index >= 0) {
+    accounts.splice(index, 1);
+  }
+  currentAccount = null;
+  return { ok: true, buildings_deleted: 0 };
 }
 
 // ---- Manager tools: guard requests and guard codes ----

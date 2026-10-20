@@ -1,6 +1,6 @@
 // apps/staff/src/components/LeaveSection.tsx
 //
-// The "Leave this building" and "Log out" buttons that sit at the bottom of the
+// The "Leave this building", "Log out", and "Delete my account" buttons that sit at the bottom of the
 // guard home and manager overview screens. Tapping "Leave this building" opens a
 // confirmation card that asks the person to type their own name first, as the
 // product rules require. If the name matches, they leave. Owned by Sraboni.
@@ -12,6 +12,7 @@ import { leaveBuilding } from '../fakeBackend';
 import { friendlyErrorMessage } from '../friendlyMessages';
 import { colors, styles } from '../styles';
 import { OutlineButton, PrimaryButton } from './Buttons';
+import DeleteAccountSection from './DeleteAccountSection';
 import Field from './Field';
 
 type Props = {
@@ -55,6 +56,7 @@ export default function LeaveSection({ displayName, buildingName, onLeft, onLogO
           onPress={() => setConfirming(true)}
         />
         <OutlineButton label="Log out" onPress={onLogOut} />
+        <DeleteAccountSection displayName={displayName} onDeleted={onLogOut} />
       </View>
     );
   }

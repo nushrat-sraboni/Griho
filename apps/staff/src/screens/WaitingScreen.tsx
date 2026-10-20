@@ -11,6 +11,7 @@ import { Pressable, StyleSheet, Text, View } from 'react-native';
 
 import Brand from '../components/Brand';
 import { OutlineButton } from '../components/Buttons';
+import DeleteAccountSection from '../components/DeleteAccountSection';
 import Eyebrow from '../components/Eyebrow';
 import HeroCard from '../components/HeroCard';
 import Screen from '../components/Screen';
@@ -18,6 +19,7 @@ import type { JoinRequestResult } from '../fakeBackend';
 import { colors, styles } from '../styles';
 
 type Props = {
+  displayName: string;
   request: JoinRequestResult;
   onLogOut: () => void;
   /** Testing only: pretends someone approved the request. Shown only while developing. */
@@ -62,7 +64,12 @@ function Step({
   );
 }
 
-export default function WaitingScreen({ request, onLogOut, onPretendApproved }: Props) {
+export default function WaitingScreen({
+  displayName,
+  request,
+  onLogOut,
+  onPretendApproved,
+}: Props) {
   const roleWords = request.role === 'manager' ? 'Manager' : 'Guard';
 
   return (
@@ -104,6 +111,7 @@ export default function WaitingScreen({ request, onLogOut, onPretendApproved }: 
 
       <View style={styles.spacer} />
       <OutlineButton label="Log out" onPress={onLogOut} />
+      <DeleteAccountSection displayName={displayName} onDeleted={onLogOut} />
     </Screen>
   );
 }
