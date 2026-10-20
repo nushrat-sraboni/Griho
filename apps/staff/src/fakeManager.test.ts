@@ -9,6 +9,7 @@ import {
   approveMyRequestForTesting,
   createCode,
   decideJoinRequest,
+  deleteAccount,
   getManagerCounts,
   listCodes,
   listGuards,
@@ -241,5 +242,19 @@ describe('guards', () => {
     const target = (await listGuards()).find((g) => g.display_name === 'Nasrin Akter')!;
     await removeMember(target.membership_id, 'Nasrin Akter');
     await expect(removeMember(target.membership_id, 'Nasrin Akter')).rejects.toThrow('NOT_FOUND');
+  });
+});
+
+describe('a manager deleting their account', () => {
+  it('leaves the guards and the waiting requests as they were', async () => {
+    await logInAsManager();
+    const guardsBefore = (await listGuards()).map((g) => g.display_name);
+    const waitingBefore = (await listPendingJoinRequests()).length;
+    await deleteAccount('Manager ' + accountNumber);
+
+    // A new manager joins and sees the same guards and requests.
+    await logInAsManager();
+    expect((await listGuards()).map((g) => g.display_name)).toEqual(guardsBefore);
+    expect((await listPendingJoinRequests()).length).toBe(waitingBefore);
   });
 });

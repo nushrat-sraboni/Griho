@@ -11,6 +11,7 @@ import { StyleSheet, Text, View } from 'react-native';
 
 import Brand from '../components/Brand';
 import { OutlineButton, PrimaryButton } from '../components/Buttons';
+import DeleteAccountSection from '../components/DeleteAccountSection';
 import Eyebrow from '../components/Eyebrow';
 import Field from '../components/Field';
 import Screen from '../components/Screen';
@@ -19,6 +20,7 @@ import { friendlyErrorMessage } from '../friendlyMessages';
 import { colors, styles } from '../styles';
 
 type Props = {
+  displayName: string;
   onRequestSent: (request: JoinRequestResult) => void;
   onLogOut: () => void;
 };
@@ -29,7 +31,7 @@ const STEPS = [
   'Your building opens.',
 ];
 
-export default function JoinBuildingScreen({ onRequestSent, onLogOut }: Props) {
+export default function JoinBuildingScreen({ displayName, onRequestSent, onLogOut }: Props) {
   const [code, setCode] = useState('');
   const [error, setError] = useState<string | null>(null);
   const [busy, setBusy] = useState(false);
@@ -91,6 +93,7 @@ export default function JoinBuildingScreen({ onRequestSent, onLogOut }: Props) {
 
       <View style={styles.spacer} />
       <OutlineButton label="Log out" onPress={onLogOut} />
+      <DeleteAccountSection displayName={displayName} onDeleted={onLogOut} />
     </Screen>
   );
 }

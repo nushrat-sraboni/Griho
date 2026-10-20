@@ -7,6 +7,7 @@
 import { describe, expect, it } from 'vitest';
 import {
   approveMyRequestForTesting,
+  deleteAccount,
   getCurrentAccount,
   getMyMembership,
   getMyPendingRequest,
@@ -162,6 +163,76 @@ describe('fake approval and leaving', () => {
   it('says NOT_A_MEMBER when leaving without a building', async () => {
     await signUp({ email: 'no.building@staff.test', password: 'x', displayName: 'No Building' });
     await expect(leaveBuilding('No Building')).rejects.toThrow('NOT_A_MEMBER');
+    await signOut();
+  });
+});
+
+describe('deleting an account', () => {
+  it('needs someone logged in', async () => {
+    await signOut();
+    await expect(deleteAccount('Anyone')).rejects.toThrow('NOT_AUTHENTICATED');
+  });
+
+  it('refuses when the typed name does not match, and keeps the account', async () => {
+    await signUp({ email: 'keep.me@staff.test', password: 'x', displayName: 'Keep Me' });
+    await expect(deleteAccount('Someone Else')).rejects.toThrow('TYPED_NAME_MISMATCH');
+    expect(getCurrentAccount()?.email).toBe('keep.me@staff.test');
+    await signOut();
+    await expect(signIn('keep.me@staff.test', 'x')).resolves.toMatchObject({
+      display_name: 'Keep Me',
+    });
+    await signOut();
+  });
+
+  it('removes the account for good when the person types their own name', async () => {
+    await signUp({ email: 'delete.me@staff.test', password: 'x', displayName: 'Delete Me' });
+    await expect(deleteAccount('  delete ME ')).resolves.toEqual({
+      ok: true,
+      buildings_deleted: 0,
+    });
+    expect(getCurrentAccount()).toBeNull();
+    await expect(signIn('delete.me@staff.test', 'x')).rejects.toThrow();
+  });
+
+  it('lets the same email sign up again as a fresh account', async () => {
+    await signUp({ email: 'again@staff.test', password: 'x', displayName: 'Again One' });
+    const firstId = getCurrentAccount()!.id;
+    await deleteAccount('Again One');
+    const second = await signUp({
+      email: 'again@staff.test',
+      password: 'x',
+      displayName: 'Again Two',
+    });
+    expect(second.id).not.toBe(firstId);
+    expect(getMyMembership()).toBeNull();
+    await signOut();
+  });
+
+  it('never gives two accounts the same id, even after a deletion', async () => {
+    const a = await signUp({ email: 'id.a@staff.test', password: 'x', displayName: 'Id A' });
+    await deleteAccount('Id A');
+    const b = await signUp({ email: 'id.b@staff.test', password: 'x', displayName: 'Id B' });
+    const c = await signUp({ email: 'id.c@staff.test', password: 'x', displayName: 'Id C' });
+    expect(new Set([a.id, b.id, c.id]).size).toBe(3);
+    await signOut();
+  });
+
+  it('removes a waiting request and a place in a building', async () => {
+    await signUp({ email: 'waiting@staff.test', password: 'x', displayName: 'Waiting One' });
+    await submitJoinRequest('GUARD-2468');
+    expect(getMyPendingRequest()).not.toBeNull();
+    await deleteAccount('Waiting One');
+    await signUp({ email: 'waiting@staff.test', password: 'x', displayName: 'Waiting One' });
+    expect(getMyPendingRequest()).toBeNull();
+    await signOut();
+
+    await signUp({ email: 'member@staff.test', password: 'x', displayName: 'Member One' });
+    await submitJoinRequest('GUARD-2468');
+    await approveMyRequestForTesting();
+    expect(getMyMembership()).not.toBeNull();
+    await deleteAccount('Member One');
+    await signUp({ email: 'member@staff.test', password: 'x', displayName: 'Member One' });
+    expect(getMyMembership()).toBeNull();
     await signOut();
   });
 });
