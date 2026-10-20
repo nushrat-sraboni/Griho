@@ -85,3 +85,8 @@ export function chatListTime(iso: string, now: number = Date.now()): string {
   if (ago < 7) return WEEKDAYS[date.getDay()];
   return `${date.getDate()} ${MONTHS[date.getMonth()]}`;
 }
+
+/** The message sent when a manager shares a guard code. Same style as the Home app's. */
+export function guardCodeMessage(codeValue: string, buildingName: string): string {
+  return `Join ${buildingName} on Griho Staff as a guard. Your code is ${codeValue}.`;
+}

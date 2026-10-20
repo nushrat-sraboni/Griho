@@ -4,13 +4,14 @@
 //   - Requests waiting: each guard who used a code, with Approve and Reject buttons.
 //   - Guard codes: every code with how many times it was used, a status badge, a
 //     Disable / Enable button, and a "New code" button to make another.
-// Approving uses up one use of the code. Rejecting uses up nothing. Disabling a code
+// Approving uses up one use of the code. Rejecting uses up nothing. A code that can
+// still be used has a "Share code" link that opens the phone's share sheet. Disabling a code
 // only blocks new requests. The data comes from the pretend backend until the real
 // one exists. Owned by Sraboni.
 
 import type { CodeInfo, PendingRequestForApprover } from '@griho/shared';
 import { useCallback, useEffect, useState } from 'react';
-import { Pressable, StyleSheet, Text, View } from 'react-native';
+import { Pressable, Share, StyleSheet, Text, View } from 'react-native';
 
 import Avatar from '../components/Avatar';
 import Brand from '../components/Brand';
@@ -26,15 +27,17 @@ import {
 } from '../fakeBackend';
 import { friendlyErrorMessage } from '../friendlyMessages';
 import { colors, styles } from '../styles';
-import { timeAgo } from '../text';
+import { guardCodeMessage, timeAgo } from '../text';
 
 type Props = {
   displayName: string;
+  /** The building's name, used in the message when a code is shared. */
+  buildingName: string;
   /** Called after anything changes, so other screens can read the new numbers. */
   onChanged: () => void;
 };
 
-export default function AccessScreen({ displayName, onChanged }: Props) {
+export default function AccessScreen({ displayName, buildingName, onChanged }: Props) {
   const [requests, setRequests] = useState<PendingRequestForApprover[]>([]);
   const [codes, setCodes] = useState<CodeInfo[]>([]);
   const [error, setError] = useState<string | null>(null);
@@ -69,6 +72,15 @@ export default function AccessScreen({ displayName, onChanged }: Props) {
       await refresh();
     } finally {
       setBusyId(null);
+    }
+  }
+
+  // Opens the phone's own share sheet (which also has "Copy") with a ready-made message.
+  async function handleShare(code: CodeInfo) {
+    try {
+      await Share.share({ message: guardCodeMessage(code.value, buildingName) });
+    } catch {
+      // The person closed the share sheet or sharing is not available: nothing to fix.
     }
   }
 
@@ -186,6 +198,16 @@ export default function AccessScreen({ displayName, onChanged }: Props) {
                   <Text style={local.detail}>
                     {code.used_count} / {code.max_uses} used
                   </Text>
+                  {active && code.remaining > 0 ? (
+                    <Pressable
+                      onPress={() => handleShare(code)}
+                      hitSlop={{ top: 10, bottom: 10, left: 10, right: 20 }}
+                      accessibilityRole="button"
+                      accessibilityLabel={`Share code ${code.value}`}
+                    >
+                      <Text style={local.shareLink}>Share code</Text>
+                    </Pressable>
+                  ) : null}
                 </View>
                 <Text style={[styles.badge, !active && local.badgeOff]}>
                   {active ? 'Active' : 'Disabled'}
@@ -249,6 +271,7 @@ const local = StyleSheet.create({
   makeButton: { marginTop: 14 },
   codeRow: { flexDirection: 'row', alignItems: 'center', marginTop: 14, minHeight: 56 },
   codeValue: { color: colors.ink, fontSize: 15, fontWeight: '800', letterSpacing: 1 },
+  shareLink: { color: colors.green, fontSize: 12, fontWeight: '800', marginTop: 6 },
   badgeOff: { backgroundColor: colors.softGrey, color: colors.muted },
   codeButton: { marginLeft: 8, width: 92 },
 });

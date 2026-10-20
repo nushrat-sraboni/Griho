@@ -72,7 +72,13 @@ export default function ManagerWorkspace({ displayName, membership, onLeft, onLo
           onLogOut={onLogOut}
         />
       ) : null}
-      {tab === 'access' ? <AccessScreen displayName={displayName} onChanged={changed} /> : null}
+      {tab === 'access' ? (
+        <AccessScreen
+          displayName={displayName}
+          buildingName={membership.building_name}
+          onChanged={changed}
+        />
+      ) : null}
       {tab === 'guards' ? (
         <GuardsScreen
           displayName={displayName}
