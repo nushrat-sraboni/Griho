@@ -11,7 +11,9 @@ import {
   decideJoinRequest,
   getManagerCounts,
   listCodes,
+  listGuards,
   listPendingJoinRequests,
+  removeMember,
   resetManagerDataForTesting,
   setCodeStatus,
   signOut,
@@ -57,6 +59,8 @@ describe('who may use the manager tools', () => {
     await expect(listCodes()).rejects.toThrow('NOT_ALLOWED');
     await expect(getManagerCounts()).rejects.toThrow('NOT_ALLOWED');
     await expect(createCode(1)).rejects.toThrow('NOT_ALLOWED');
+    await expect(listGuards()).rejects.toThrow('NOT_ALLOWED');
+    await expect(removeMember('guard-membership-1', 'Rafiq Ahmed')).rejects.toThrow('NOT_ALLOWED');
   });
 
   it('refuses someone who is not logged in', async () => {
@@ -173,5 +177,69 @@ describe('guard codes', () => {
   it('says NOT_FOUND for a code that does not exist', async () => {
     await logInAsManager();
     await expect(setCodeStatus('code-999', 'disabled')).rejects.toThrow('NOT_FOUND');
+  });
+});
+
+describe('guards', () => {
+  it('lists the guards in alphabetical order, with no one but guards', async () => {
+    await logInAsManager();
+    const guards = await listGuards();
+    expect(guards.map((g) => g.display_name)).toEqual([
+      'Imran Hasan',
+      'Nasrin Akter',
+      'Rafiq Ahmed',
+      'Shirin Sultana',
+      'Tanvir Alam',
+    ]);
+    expect(guards.every((g) => g.role === 'guard')).toBe(true);
+    expect((await getManagerCounts()).guards).toBe(guards.length);
+  });
+
+  it('shows an approved guard in the list', async () => {
+    await logInAsManager();
+    await decideJoinRequest('request-1', 'approve');
+    const names = (await listGuards()).map((g) => g.display_name);
+    expect(names).toContain('Karim Hossain');
+    expect(names.length).toBe(6);
+  });
+
+  it('does not show a rejected guard in the list', async () => {
+    await logInAsManager();
+    await decideJoinRequest('request-2', 'reject');
+    const names = (await listGuards()).map((g) => g.display_name);
+    expect(names).not.toContain('Salma Begum');
+    expect(names.length).toBe(5);
+  });
+
+  it('removes a guard when the manager types their name, ignoring capitals and spaces', async () => {
+    await logInAsManager();
+    const target = (await listGuards()).find((g) => g.display_name === 'Rafiq Ahmed')!;
+    await expect(removeMember(target.membership_id, '  rafiq AHMED ')).resolves.toEqual({
+      ok: true,
+    });
+    const after = await listGuards();
+    expect(after.some((g) => g.membership_id === target.membership_id)).toBe(false);
+    expect((await getManagerCounts()).guards).toBe(4);
+  });
+
+  it('keeps the guard when the typed name does not match', async () => {
+    await logInAsManager();
+    const target = (await listGuards()).find((g) => g.display_name === 'Rafiq Ahmed')!;
+    await expect(removeMember(target.membership_id, 'Someone Else')).rejects.toThrow(
+      'TYPED_NAME_MISMATCH',
+    );
+    expect((await listGuards()).length).toBe(5);
+  });
+
+  it('says NOT_FOUND for a guard who is not there', async () => {
+    await logInAsManager();
+    await expect(removeMember('guard-membership-999', 'Nobody')).rejects.toThrow('NOT_FOUND');
+  });
+
+  it('cannot remove the same guard twice', async () => {
+    await logInAsManager();
+    const target = (await listGuards()).find((g) => g.display_name === 'Nasrin Akter')!;
+    await removeMember(target.membership_id, 'Nasrin Akter');
+    await expect(removeMember(target.membership_id, 'Nasrin Akter')).rejects.toThrow('NOT_FOUND');
   });
 });

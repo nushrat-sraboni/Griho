@@ -30,3 +30,12 @@ export function greetingFor(hour: number): string {
   if (hour < 18) return 'Good afternoon';
   return 'Good evening';
 }
+
+/**
+ * True when a typed name matches a real name, ignoring capital letters and spaces
+ * at the ends. The screens use it to switch on the "Remove" button. The backend
+ * checks the name again on its own, so the screens are never the only guard.
+ */
+export function namesMatch(typed: string, actual: string): boolean {
+  return typed.trim().toLowerCase() === actual.trim().toLowerCase();
+}

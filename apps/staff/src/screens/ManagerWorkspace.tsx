@@ -2,7 +2,7 @@
 //
 // Everything a manager sees once they belong to a building: the four screens of the
 // manager workspace (Overview, Access, Guards, Messages) and the bottom menu that
-// switches between them. Overview and Access are built. Guards and Messages show a
+// switches between them. Overview, Access, and Guards are built. Messages shows a
 // short "coming next" note for now. When something changes on the Access screen
 // (a request answered, a code made), the Overview numbers and the little badge on
 // the Access tab are read again. Owned by Sraboni.
@@ -14,6 +14,7 @@ import Screen from '../components/Screen';
 import { getManagerCounts, type Membership } from '../fakeBackend';
 import AccessScreen from './AccessScreen';
 import ComingNextScreen from './ComingNextScreen';
+import GuardsScreen from './GuardsScreen';
 import ManagerOverviewScreen from './ManagerOverviewScreen';
 
 type Props = {
@@ -59,11 +60,10 @@ export default function ManagerWorkspace({ displayName, membership, onLeft, onLo
         <AccessScreen displayName={displayName} onChanged={() => setRefreshKey((k) => k + 1)} />
       ) : null}
       {tab === 'guards' ? (
-        <ComingNextScreen
+        <GuardsScreen
           displayName={displayName}
-          eyebrow="Your team"
-          title="Guards."
-          text="The list of guards, and removing a guard, are coming in the next step."
+          buildingName={membership.building_name}
+          onChanged={() => setRefreshKey((k) => k + 1)}
         />
       ) : null}
       {tab === 'messages' ? (
