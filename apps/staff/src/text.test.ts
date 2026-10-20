@@ -8,6 +8,7 @@ import {
   clockTime,
   dayLabel,
   greetingFor,
+  guardCodeMessage,
   initialsOf,
   namesMatch,
   timeAgo,
@@ -112,5 +113,13 @@ describe('chatListTime', () => {
     expect(chatListTime(local(10, 16, 20, 0), TODAY_NOON)).toBe('Yesterday');
     expect(chatListTime(local(10, 12, 20, 0), TODAY_NOON)).toBe('Mon');
     expect(chatListTime(local(9, 30, 20, 0), TODAY_NOON)).toBe('30 Sep');
+  });
+});
+
+describe('guardCodeMessage', () => {
+  it('names the building and the code', () => {
+    expect(guardCodeMessage('GRD-4F7K', 'Lakeview Heights')).toBe(
+      'Join Lakeview Heights on Griho Staff as a guard. Your code is GRD-4F7K.',
+    );
   });
 });
