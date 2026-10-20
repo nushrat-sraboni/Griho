@@ -14,7 +14,7 @@
 // password was typed. Any typed password works.
 // Delete this file when the real backend is ready. Owned by Sraboni.
 
-import type { Account, CodeInfo, PendingRequestForApprover } from '@griho/shared';
+import type { Account, CodeInfo, MemberListItem, PendingRequestForApprover } from '@griho/shared';
 
 // Fake accounts to log in with while we build. Emails end in ".test" on purpose,
 // so they can never be real people's addresses.
@@ -219,7 +219,8 @@ export async function leaveBuilding(typedName: string): Promise<{ result: 'left'
 //
 // Pretend data for the manager workspace. It copies these functions from
 // docs/api-contract.md: list_pending_join_requests, decide_join_request,
-// list_codes, create_code, and set_code_status. Only a manager may use them;
+// list_codes, create_code, set_code_status, list_guards, and remove_member.
+// Only a manager may use them;
 // anyone else gets NOT_ALLOWED, as the real backend will do.
 
 type FakeGuardRequest = {
@@ -232,11 +233,24 @@ type FakeGuardRequest = {
 
 let guardCodes: CodeInfo[] = [];
 let guardRequests: FakeGuardRequest[] = [];
-let guardCount = 0;
+let guards: MemberListItem[] = [];
 let codeCounter = 0;
+let guardCounter = 0;
 
 // A sample number, until the Messages screen exists.
 const OPEN_CHATS = 4;
+
+// Makes one guard for the pretend list. Each gets its own account and membership id.
+function makeGuard(name: string): MemberListItem {
+  guardCounter += 1;
+  return {
+    account_id: `guard-account-${guardCounter}`,
+    membership_id: `guard-membership-${guardCounter}`,
+    display_name: name,
+    role: 'guard',
+    flat_label: null,
+  };
+}
 
 function minutesAgo(minutes: number): string {
   return new Date(Date.now() - minutes * 60000).toISOString();
@@ -286,7 +300,10 @@ export function resetManagerDataForTesting(): void {
       status: 'pending',
     },
   ];
-  guardCount = 5;
+  guardCounter = 0;
+  guards = ['Rafiq Ahmed', 'Nasrin Akter', 'Tanvir Alam', 'Shirin Sultana', 'Imran Hasan'].map(
+    makeGuard,
+  );
   codeCounter = guardCodes.length;
 }
 resetManagerDataForTesting();
@@ -310,7 +327,7 @@ export async function getManagerCounts(): Promise<{
 }> {
   requireManager();
   return {
-    guards: guardCount,
+    guards: guards.length,
     waiting: guardRequests.filter((r) => r.status === 'pending').length,
     codesInUse: guardCodes.filter((c) => c.status === 'active').length,
     chats: OPEN_CHATS,
@@ -355,7 +372,7 @@ export async function decideJoinRequest(
     }
     code.used_count += 1;
     code.remaining -= 1;
-    guardCount += 1;
+    guards.push(makeGuard(request.requester_name));
     request.status = 'approved';
   } else {
     request.status = 'rejected';
@@ -401,4 +418,28 @@ export async function setCodeStatus(
   }
   code.status = status;
   return { ...code };
+}
+
+/** The guards of the building, in alphabetical order. Guards are never messaged. */
+export async function listGuards(): Promise<MemberListItem[]> {
+  requireManager();
+  return guards.map((g) => ({ ...g })).sort((a, b) => a.display_name.localeCompare(b.display_name));
+}
+
+/**
+ * Remove a guard from the building. They lose access right away. The manager must
+ * type the guard's name to confirm. The check ignores capital letters and spaces at
+ * the ends, like the real backend.
+ */
+export async function removeMember(membershipId: string, typedName: string): Promise<{ ok: true }> {
+  requireManager();
+  const guard = guards.find((g) => g.membership_id === membershipId);
+  if (!guard) {
+    throw new Error('NOT_FOUND');
+  }
+  if (typedName.trim().toLowerCase() !== guard.display_name.trim().toLowerCase()) {
+    throw new Error('TYPED_NAME_MISMATCH');
+  }
+  guards = guards.filter((g) => g.membership_id !== membershipId);
+  return { ok: true };
 }

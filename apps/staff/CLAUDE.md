@@ -52,8 +52,8 @@ This file is read when a session works inside `apps/staff/`. It adds to the root
 
 The app follows the Griho Staff design and talks to a **pretend backend** (`src/fakeBackend.ts`), because the real backend is not built yet. Delete the pretend one when it is.
 
-**Built:** log in, sign up, join with a code, waiting for approval, the guard home screen (with leaving a building), and the manager workspace's Overview and Access screens (answer guard requests, make and switch guard codes).
+**Built:** log in, sign up, join with a code, waiting for approval, the guard home screen (with leaving a building), and the manager workspace's Overview, Access, and Guards screens (answer guard requests, make and switch guard codes, see and remove guards with a typed-name confirmation).
 
-**Not built yet:** the manager's Guards and Messages screens (they show a "coming next" note), the exact Plus Jakarta Sans font, and the bottom menu icons. The font and icons need packages added by Shafin.
+**Not built yet:** the manager's Messages screen (it shows a "coming next" note), the exact Plus Jakarta Sans font, and the bottom menu icons. The font and icons need packages added by Shafin.
 
 Start it with `npm run start --workspace @griho/staff` (see "Getting Started" in the root `CLAUDE.md`). Docker is not needed for this app.

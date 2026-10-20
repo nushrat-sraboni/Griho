@@ -3,7 +3,7 @@
 // Small checks for the time and initials helpers. Run with: npm test
 
 import { describe, expect, it } from 'vitest';
-import { greetingFor, initialsOf, timeAgo } from './text';
+import { greetingFor, initialsOf, namesMatch, timeAgo } from './text';
 
 const NOW = Date.parse('2026-10-17T12:00:00Z');
 const minutesAgo = (m: number) => new Date(NOW - m * 60000).toISOString();
@@ -56,5 +56,16 @@ describe('greetingFor', () => {
     expect(greetingFor(17)).toBe('Good afternoon');
     expect(greetingFor(18)).toBe('Good evening');
     expect(greetingFor(23)).toBe('Good evening');
+  });
+});
+
+describe('namesMatch', () => {
+  it('ignores capital letters and spaces at the ends', () => {
+    expect(namesMatch('  karim hossain ', 'Karim Hossain')).toBe(true);
+  });
+
+  it('does not match a different or partial name', () => {
+    expect(namesMatch('Karim', 'Karim Hossain')).toBe(false);
+    expect(namesMatch('', 'Karim Hossain')).toBe(false);
   });
 });

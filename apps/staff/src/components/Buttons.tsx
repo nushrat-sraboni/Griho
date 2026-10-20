@@ -60,7 +60,7 @@ export function OutlineButton({
       style={[
         local.outline,
         compact && local.compact,
-        { borderColor: compact ? '#d8dfd9' : color },
+        { borderColor: compact ? (tone === 'danger' ? '#e6cfcc' : '#d8dfd9') : color },
         disabled && local.disabled,
       ]}
       onPress={onPress}
