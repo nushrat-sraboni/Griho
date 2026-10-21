@@ -6,8 +6,10 @@
 // will use.
 //
 // BATCH 1 (built): login and sign-up, buildings, flats, and codes.
-// LATER BATCHES (not built yet): joining and approving, members and leaving,
-// and chat. Those dishes throw "FAKE_NOT_BUILT_YET" until their batch lands.
+// BATCH 2 (built, in ./fakeMembers.ts): joining and approving, people, leaving,
+// and deleting an account.
+// LATER BATCH (not built yet): chat. Those dishes throw "FAKE_NOT_BUILT_YET"
+// until it lands.
 //
 // Real-backend details we copy on purpose:
 //   - Signing up with an email that is already used fails with the text
@@ -29,6 +31,7 @@ import type {
   MembershipRecord,
 } from './fakeDatabase';
 import { makeId } from './fakeDatabase';
+import { createMemberDishes } from './fakeMembers';
 import { createSeededDatabase } from './seed';
 
 export type FakeApiOptions = {
@@ -401,6 +404,10 @@ export function createFakeApi(options: FakeApiOptions = {}): GrihoApi {
     return toCodeInfo(code);
   });
 
+  // ---- Joining, people and leaving (contract 4.1, 4.5, 4.6) ---------------
+
+  const members = createMemberDishes({ db, requireMe, myMembership, countActiveOwners });
+
   // ---- Not built yet (later batches) --------------------------------------
 
   /** A dish that is on the menu but whose batch has not been built yet. */
@@ -428,16 +435,16 @@ export function createFakeApi(options: FakeApiOptions = {}): GrihoApi {
     listCodes,
     setCodeStatus,
 
-    // Batch 2: joining, members, leaving.
-    deleteAccount: notBuilt('deleteAccount'),
-    submitJoinRequest: notBuilt('submitJoinRequest'),
-    listMyJoinRequests: notBuilt('listMyJoinRequests'),
-    listPendingJoinRequests: notBuilt('listPendingJoinRequests'),
-    decideJoinRequest: notBuilt('decideJoinRequest'),
-    listMembers: notBuilt('listMembers'),
-    listGuards: notBuilt('listGuards'),
-    removeMember: notBuilt('removeMember'),
-    leaveBuilding: notBuilt('leaveBuilding'),
+    // Batch 2: joining, people, leaving (the rules live in ./fakeMembers.ts).
+    deleteAccount: call(members.deleteAccount),
+    submitJoinRequest: call(members.submitJoinRequest),
+    listMyJoinRequests: call(members.listMyJoinRequests),
+    listPendingJoinRequests: call(members.listPendingJoinRequests),
+    decideJoinRequest: call(members.decideJoinRequest),
+    listMembers: call(members.listMembers),
+    listGuards: call(members.listGuards),
+    removeMember: call(members.removeMember),
+    leaveBuilding: call(members.leaveBuilding),
 
     // Batch 3: chat.
     getOrCreateConversation: notBuilt('getOrCreateConversation'),

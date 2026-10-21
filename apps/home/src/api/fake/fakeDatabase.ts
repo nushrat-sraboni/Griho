@@ -106,6 +106,8 @@ export type FakeDatabase = {
   conversations: ConversationRecord[];
   messages: MessageRecord[];
   pushTokens: PushTokenRecord[];
+  /** When each person last typed a join code, for the "8 tries per 10 minutes" limit. */
+  joinAttempts: { accountId: string; at: number }[];
   /** Who is logged in right now. null means nobody. */
   sessionAccountId: string | null;
   /** A counter that makes sure every new id is different. */
@@ -124,6 +126,7 @@ export function createEmptyDatabase(): FakeDatabase {
     conversations: [],
     messages: [],
     pushTokens: [],
+    joinAttempts: [],
     sessionAccountId: null,
     nextNumber: 1,
   };

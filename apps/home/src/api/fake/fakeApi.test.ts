@@ -342,7 +342,9 @@ describe('codes', () => {
 describe('dishes from later batches', () => {
   it('say clearly that they are not built yet', async () => {
     const { api } = setup();
-    await expect(api.submitJoinRequest({ code_value: 'X' })).rejects.toThrow('FAKE_NOT_BUILT_YET');
+    await expect(api.sendMessage({ conversation_id: 'x', body: 'hi' })).rejects.toThrow(
+      'FAKE_NOT_BUILT_YET',
+    );
     expect(getErrorCode(new Error('FAKE_NOT_BUILT_YET: x'))).toBe('UNKNOWN');
   });
 });
