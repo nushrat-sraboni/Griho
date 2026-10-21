@@ -13,6 +13,7 @@ import {
   canRemove,
   peopleCountSentence,
   peopleSummary,
+  splitGuards,
   typedNameMatches,
 } from './people';
 
@@ -47,6 +48,15 @@ describe('canRemove', () => {
   it('shows no Remove button to tenants', () => {
     expect(canRemove('tenant', { role: 'tenant' })).toBe(false);
     expect(canRemove('tenant', { role: 'guard' })).toBe(false);
+  });
+});
+
+describe('splitGuards', () => {
+  it('separates guards from everyone else', () => {
+    const all = [person('Salma', 'owner'), person('Gopal', 'guard'), person('Karima', 'tenant')];
+    const { people, guards } = splitGuards(all);
+    expect(people.map((p) => p.display_name)).toEqual(['Salma', 'Karima']);
+    expect(guards.map((g) => g.display_name)).toEqual(['Gopal']);
   });
 });
 

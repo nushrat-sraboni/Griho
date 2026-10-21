@@ -13,6 +13,8 @@
 //   Leave a building   : confirm leaving (or deleting it, for the only owner)
 //   Flats              : the owner's list of flats, with add, rename and claim screens
 //   Join codes         : the owner's list of codes, with make, open (share, turn off or on) and delete
+//   Messages           : the person's chats in the building, "New message", the chat itself,
+//                        and the screen that confirms deleting one of their own messages
 // It also remembers which building is "active" (open) while the app is running.
 // Owned by Bishal.
 
@@ -27,7 +29,7 @@ import {
 import { StatusBar } from 'expo-status-bar';
 import { useState } from 'react';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
-import type { Account, Building, CodeInfo, Flat, MemberListItem } from '@griho/shared';
+import type { Account, Building, CodeInfo, Flat, MemberListItem, Message } from '@griho/shared';
 
 import {
   api,
@@ -37,19 +39,23 @@ import {
 } from './src/api';
 import { loadMembership } from './src/buildings';
 import BuildingHomeScreen from './src/screens/BuildingHomeScreen';
+import ChatScreen from './src/screens/ChatScreen';
 import ClaimFlatScreen from './src/screens/ClaimFlatScreen';
 import CodeDetailScreen from './src/screens/CodeDetailScreen';
 import CodesScreen from './src/screens/CodesScreen';
 import CreateBuildingScreen from './src/screens/CreateBuildingScreen';
 import DeleteAccountScreen from './src/screens/DeleteAccountScreen';
 import DeleteCodeScreen from './src/screens/DeleteCodeScreen';
+import DeleteMessageScreen from './src/screens/DeleteMessageScreen';
 import FlatFormScreen, { type FlatFormMode } from './src/screens/FlatFormScreen';
 import FlatsScreen from './src/screens/FlatsScreen';
 import JoinCodeScreen from './src/screens/JoinCodeScreen';
 import LeaveBuildingScreen from './src/screens/LeaveBuildingScreen';
 import LogInScreen from './src/screens/LogInScreen';
 import MakeCodeScreen from './src/screens/MakeCodeScreen';
+import MessagesScreen from './src/screens/MessagesScreen';
 import MyBuildingsScreen from './src/screens/MyBuildingsScreen';
+import NewMessageScreen from './src/screens/NewMessageScreen';
 import PeopleScreen from './src/screens/PeopleScreen';
 import RemovePersonScreen from './src/screens/RemovePersonScreen';
 import RequestSentScreen from './src/screens/RequestSentScreen';
@@ -75,7 +81,14 @@ type ScreenName =
   | 'codes'
   | 'makeCode'
   | 'codeDetail'
-  | 'deleteCode';
+  | 'deleteCode'
+  | 'messages'
+  | 'newMessage'
+  | 'chat'
+  | 'deleteMessage';
+
+/** The chat that is open, and what the other person is called (or "Former member"). */
+type OpenChat = { conversationId: string; otherLabel: string };
 
 /** The building that is open right now, and whether the person just made it. */
 type ActiveBuilding = { membership: MembershipWithLastOwner; justCreated: boolean };
@@ -109,6 +122,9 @@ export default function App() {
   // Codes: the green "it worked" sentence, and which code is open.
   const [codesNotice, setCodesNotice] = useState<string | null>(null);
   const [openCode, setOpenCode] = useState<OpenCode | null>(null);
+  // Messages: which chat is open, and which of my messages is about to be deleted.
+  const [openChat, setOpenChat] = useState<OpenChat | null>(null);
+  const [deleteMessageTarget, setDeleteMessageTarget] = useState<Message | null>(null);
 
   /** Forgets everything about the person who was logged in. */
   function forgetEverything() {
@@ -121,6 +137,8 @@ export default function App() {
     setFlatsNotice(null);
     setCodesNotice(null);
     setOpenCode(null);
+    setOpenChat(null);
+    setDeleteMessageTarget(null);
   }
 
   function handleLoggedIn(loggedIn: Account) {
@@ -175,6 +193,16 @@ export default function App() {
     clearJustCreated();
     setCodesNotice(null);
     setScreen('codes');
+  }
+
+  function handleOpenMessages() {
+    clearJustCreated();
+    setScreen('messages');
+  }
+
+  function showChat(conversationId: string, otherLabel: string) {
+    setOpenChat({ conversationId, otherLabel });
+    setScreen('chat');
   }
 
   function handleLeft(result: LeaveBuildingResult['result']) {
@@ -244,7 +272,56 @@ export default function App() {
         onOpenFlats={handleOpenFlats}
         onOpenCodes={handleOpenCodes}
         onOpenPeople={handleOpenPeople}
+        onOpenMessages={handleOpenMessages}
         onLeave={() => setScreen('leaveBuilding')}
+      />
+    );
+  } else if (account && screen === 'messages' && active) {
+    content = (
+      <MessagesScreen
+        key={active.membership.building.id}
+        membership={active.membership}
+        onBack={() => setScreen('building')}
+        onSwitch={switchToBuildings}
+        onNew={() => setScreen('newMessage')}
+        onOpen={(chat) => showChat(chat.conversation_id, chat.other.label)}
+      />
+    );
+  } else if (account && screen === 'newMessage' && active) {
+    content = (
+      <NewMessageScreen
+        membership={active.membership}
+        onBack={() => setScreen('messages')}
+        onSwitch={switchToBuildings}
+        onOpenChat={(conversationId, person) => showChat(conversationId, person.display_name)}
+      />
+    );
+  } else if (account && screen === 'chat' && active && openChat) {
+    content = (
+      <ChatScreen
+        key={openChat.conversationId}
+        membership={active.membership}
+        conversationId={openChat.conversationId}
+        otherLabel={openChat.otherLabel}
+        onBack={() => setScreen('messages')}
+        onSwitch={switchToBuildings}
+        onDelete={(message) => {
+          setDeleteMessageTarget(message);
+          setScreen('deleteMessage');
+        }}
+      />
+    );
+  } else if (account && screen === 'deleteMessage' && active && deleteMessageTarget) {
+    content = (
+      <DeleteMessageScreen
+        membership={active.membership}
+        message={deleteMessageTarget}
+        onBack={() => setScreen('chat')}
+        onSwitch={switchToBuildings}
+        onDeleted={() => {
+          setDeleteMessageTarget(null);
+          setScreen('chat');
+        }}
       />
     );
   } else if (account && screen === 'requests' && active) {
@@ -269,6 +346,7 @@ export default function App() {
           setRemoveTarget(person);
           setScreen('removePerson');
         }}
+        onOpenChat={(conversationId, person) => showChat(conversationId, person.display_name)}
       />
     );
   } else if (account && screen === 'removePerson' && active && removeTarget) {

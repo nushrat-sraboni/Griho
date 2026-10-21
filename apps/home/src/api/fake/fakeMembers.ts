@@ -235,16 +235,10 @@ export function createMemberDishes(ctx: MemberContext) {
     const me = requireMe();
     const mine = myMembership(me.id, building_id);
     if (!mine) fail('NOT_A_MEMBER');
-    if (mine.role === 'guard') fail('NOT_ALLOWED'); // Guards have no member list.
+    // Everyone in the building, guards included, can see and message everyone else.
     const order: Record<Role, number> = { owner: 0, manager: 1, tenant: 2, guard: 3 };
     return db.memberships
-      .filter(
-        (m) =>
-          m.buildingId === building_id &&
-          m.status === 'active' &&
-          m.role !== 'guard' &&
-          m.accountId !== me.id,
-      )
+      .filter((m) => m.buildingId === building_id && m.status === 'active' && m.accountId !== me.id)
       .sort(
         (a, b) =>
           order[a.role] - order[b.role] ||

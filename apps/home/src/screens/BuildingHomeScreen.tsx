@@ -13,7 +13,13 @@
 
 import { ActivityIndicator, StyleSheet, Text, View } from 'react-native';
 import Svg, { Circle, Path } from 'react-native-svg';
-import type { CodeInfo, Flat, MemberListItem, PendingRequestForApprover } from '@griho/shared';
+import type {
+  CodeInfo,
+  ConversationItem,
+  Flat,
+  MemberListItem,
+  PendingRequestForApprover,
+} from '@griho/shared';
 
 import { api, type MembershipWithLastOwner } from '../api';
 import BuildingBar from '../components/BuildingBar';
@@ -27,7 +33,8 @@ import { roleLabel } from '../buildings';
 import { codesSummary } from '../codes';
 import { flatSummary } from '../flats';
 import { waitingSummary } from '../joining';
-import { peopleSummary } from '../people';
+import { chatsSummary } from '../messages';
+import { peopleSummary, splitGuards } from '../people';
 import { cardStyle, colors, fonts } from '../theme';
 import { useLoad } from '../useLoad';
 
@@ -40,6 +47,7 @@ type Props = {
   onOpenFlats: () => void;
   onOpenCodes: () => void;
   onOpenPeople: () => void;
+  onOpenMessages: () => void;
   onLeave: () => void;
 };
 
@@ -62,6 +70,7 @@ export default function BuildingHomeScreen({
   onOpenFlats,
   onOpenCodes,
   onOpenPeople,
+  onOpenMessages,
   onLeave,
 }: Props) {
   const isOwner = membership.role === 'owner';
@@ -82,17 +91,17 @@ export default function BuildingHomeScreen({
     isOwner ? api.listCodes({ building_id: buildingId }) : Promise.resolve([]),
   );
   const peopleLoad = useLoad<MemberListItem[]>(() => api.listMembers({ building_id: buildingId }));
-  const guardsLoad = useLoad<MemberListItem[]>(() =>
-    isOwner ? api.listGuards({ building_id: buildingId }) : Promise.resolve([]),
+  const chatsLoad = useLoad<ConversationItem[]>(() =>
+    api.listConversations({ building_id: buildingId }),
   );
   const roleText = roleLabel(membership);
 
-  const peopleLine =
-    peopleLoad.error || guardsLoad.error
-      ? 'Tap to see the people'
-      : peopleLoad.data && guardsLoad.data
-        ? peopleSummary(peopleLoad.data, guardsLoad.data)
-        : 'Loading...';
+  const split = peopleLoad.data ? splitGuards(peopleLoad.data) : null;
+  const peopleLine = peopleLoad.error
+    ? 'Tap to see the people'
+    : split
+      ? peopleSummary(split.people, split.guards)
+      : 'Loading...';
 
   return (
     <Screen>
@@ -180,6 +189,26 @@ export default function BuildingHomeScreen({
             />
           </>
         ) : null}
+        <MenuCard
+          title="Messages"
+          body={cardLine(chatsLoad, chatsSummary, 'Tap to see your chats')}
+          tileColor={colors.teal}
+          onPress={onOpenMessages}
+          icon={
+            <Svg
+              width={26}
+              height={26}
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke={colors.page}
+              strokeWidth={2}
+              strokeLinecap="round"
+              strokeLinejoin="round"
+            >
+              <Path d="M4 5 H20 V16 H11 L6 20 V16 H4 Z" />
+            </Svg>
+          }
+        />
         <MenuCard
           title="People"
           body={peopleLine}
