@@ -1,13 +1,13 @@
 // apps/home/src/screens/PeopleScreen.tsx
 //
-// The people in a building: other owners, the manager and tenants, each with
-// their role. This is also how a member finds someone to message (PRD 5.6).
-// Owners also see the building's guards in their own section (guards cannot
-// message, so they are listed only so they can be removed) and a Remove button on
-// everyone except other owners. The person looking is not in the list. The
-// building bar stays at the top so the building's name is always visible.
+// Everyone else in a building: owners, the manager, tenants and guards, each with
+// their role. Everyone in a building can message everyone, so every row has a
+// "Message" button that opens a chat. Owners also see a red "Remove" button on
+// everyone except other owners (PRD 5.7). The person looking is not in the list.
+// The building bar stays at the top so the building's name is always visible.
 // Owned by Bishal.
 
+import { useState } from 'react';
 import { ActivityIndicator, StyleSheet, Text, View } from 'react-native';
 import type { MemberListItem } from '@griho/shared';
 
@@ -20,7 +20,8 @@ import Notice from '../components/Notice';
 import PersonRow from '../components/PersonRow';
 import Screen from '../components/Screen';
 import { roleLabel } from '../buildings';
-import { canRemove, peopleCountSentence } from '../people';
+import { friendlyErrorMessage } from '../friendlyMessages';
+import { canRemove, peopleCountSentence, splitGuards } from '../people';
 import { cardStyle, colors, fonts } from '../theme';
 import { useLoad } from '../useLoad';
 
@@ -31,20 +32,40 @@ type Props = {
   onBack: () => void;
   onSwitch: () => void;
   onRemove: (person: MemberListItem) => void;
+  /** Called with the chat that was opened (or started) for the chosen person. */
+  onOpenChat: (conversationId: string, person: MemberListItem) => void;
 };
 
-export default function PeopleScreen({ membership, notice, onBack, onSwitch, onRemove }: Props) {
+export default function PeopleScreen({
+  membership,
+  notice,
+  onBack,
+  onSwitch,
+  onRemove,
+  onOpenChat,
+}: Props) {
   const isOwner = membership.role === 'owner';
-  const buildingId = membership.building.id;
-  const people = useLoad(() => api.listMembers({ building_id: buildingId }));
-  const guards = useLoad<MemberListItem[]>(() =>
-    isOwner ? api.listGuards({ building_id: buildingId }) : Promise.resolve([]),
-  );
-  const error = people.error ?? guards.error;
-  const reload = () => {
-    people.reload();
-    guards.reload();
-  };
+  const [chatError, setChatError] = useState<string | null>(null);
+
+  async function startChat(person: MemberListItem) {
+    setChatError(null);
+    try {
+      const { conversation_id } = await api.getOrCreateConversation({
+        building_id: membership.building.id,
+        other_account_id: person.account_id,
+      });
+      onOpenChat(conversation_id, person);
+    } catch (caught) {
+      setChatError(friendlyErrorMessage(caught as { message?: string }));
+    }
+  }
+  const {
+    data: people,
+    error,
+    loading,
+    reload,
+  } = useLoad(() => api.listMembers({ building_id: membership.building.id }));
+  const split = people ? splitGuards(people) : null;
 
   return (
     <Screen>
@@ -56,16 +77,17 @@ export default function PeopleScreen({ membership, notice, onBack, onSwitch, onR
       <BackLink label={membership.building.name} onPress={onBack} />
 
       {notice ? <Notice kind="success" text={notice} /> : null}
+      {chatError ? <Notice kind="error" text={chatError} /> : null}
 
       <View style={styles.eyebrow}>
         <Eyebrow text="PEOPLE" />
       </View>
       <Text style={styles.title}>In {membership.building.name}</Text>
-      {people.data && guards.data ? (
-        <Text style={styles.subtitle}>{peopleCountSentence(people.data, guards.data)}</Text>
+      {split ? (
+        <Text style={styles.subtitle}>{peopleCountSentence(split.people, split.guards)}</Text>
       ) : null}
 
-      {people.loading || guards.loading ? (
+      {loading ? (
         <ActivityIndicator
           style={styles.loading}
           color={colors.teal}
@@ -82,7 +104,7 @@ export default function PeopleScreen({ membership, notice, onBack, onSwitch, onR
         </View>
       ) : null}
 
-      {people.data && people.data.length === 0 ? (
+      {people && people.length === 0 ? (
         <View style={styles.empty}>
           <Text style={styles.emptyTitle}>No one else yet</Text>
           <Text style={styles.emptyBody}>
@@ -93,37 +115,18 @@ export default function PeopleScreen({ membership, notice, onBack, onSwitch, onR
         </View>
       ) : null}
 
-      {people.data && people.data.length > 0 ? (
+      {people && people.length > 0 ? (
         <View style={styles.list}>
-          {people.data.map((person) => (
+          {people.map((person) => (
             <PersonRow
               key={person.membership_id}
               person={person}
               removable={canRemove(membership.role, person)}
               onRemove={() => onRemove(person)}
+              onMessage={() => startChat(person)}
             />
           ))}
         </View>
-      ) : null}
-
-      {isOwner && guards.data && guards.data.length > 0 ? (
-        <>
-          <Text style={styles.sectionLabel}>GUARDS</Text>
-          <View style={styles.guards}>
-            {guards.data.map((guard) => (
-              <PersonRow
-                key={guard.membership_id}
-                person={guard}
-                removable={canRemove(membership.role, guard)}
-                onRemove={() => onRemove(guard)}
-              />
-            ))}
-          </View>
-          <Text style={styles.footnote}>
-            Guards cannot send or receive messages, so they are listed here only so you can remove
-            them.
-          </Text>
-        </>
       ) : null}
     </Screen>
   );
@@ -156,22 +159,6 @@ const styles = StyleSheet.create({
     fontFamily: fonts.regular,
     fontSize: 13.5,
     lineHeight: 19,
-    color: colors.muted,
-  },
-  sectionLabel: {
-    marginTop: 22,
-    fontFamily: fonts.bold,
-    fontSize: 11,
-    letterSpacing: 1.6,
-    color: colors.muted,
-  },
-  guards: { marginTop: 10, gap: 10 },
-  footnote: {
-    marginTop: 14,
-    marginHorizontal: 4,
-    fontFamily: fonts.regular,
-    fontSize: 13,
-    lineHeight: 18,
     color: colors.muted,
   },
 });

@@ -339,12 +339,15 @@ describe('codes', () => {
   });
 });
 
-describe('dishes from later batches', () => {
-  it('say clearly that they are not built yet', async () => {
+describe('every dish on the menu', () => {
+  it('is built, so none says "not built yet" any more', async () => {
     const { api } = setup();
-    await expect(api.sendMessage({ conversation_id: 'x', body: 'hi' })).rejects.toThrow(
-      'FAKE_NOT_BUILT_YET',
+    for (const name of Object.keys(api) as (keyof GrihoApi)[]) {
+      expect(typeof api[name]).toBe('function');
+    }
+    // Not logged in: a built dish says NOT_AUTHENTICATED, never "not built yet".
+    expect(await errorCodeOf(api.listConversations({ building_id: 'x' }))).toBe(
+      'NOT_AUTHENTICATED',
     );
-    expect(getErrorCode(new Error('FAKE_NOT_BUILT_YET: x'))).toBe('UNKNOWN');
   });
 });

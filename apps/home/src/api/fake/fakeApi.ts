@@ -8,8 +8,7 @@
 // BATCH 1 (built): login and sign-up, buildings, flats, and codes.
 // BATCH 2 (built, in ./fakeMembers.ts): joining and approving, people, leaving,
 // and deleting an account.
-// LATER BATCH (not built yet): chat. Those dishes throw "FAKE_NOT_BUILT_YET"
-// until it lands.
+// BATCH 3 (built, in ./fakeChat.ts): direct messages.
 //
 // Real-backend details we copy on purpose:
 //   - Signing up with an email that is already used fails with the text
@@ -31,6 +30,7 @@ import type {
   MembershipRecord,
 } from './fakeDatabase';
 import { makeId } from './fakeDatabase';
+import { createChatDishes } from './fakeChat';
 import { createMemberDishes } from './fakeMembers';
 import { createSeededDatabase } from './seed';
 
@@ -408,14 +408,9 @@ export function createFakeApi(options: FakeApiOptions = {}): GrihoApi {
 
   const members = createMemberDishes({ db, requireMe, myMembership, countActiveOwners });
 
-  // ---- Not built yet (later batches) --------------------------------------
+  // ---- Direct messages (contract 4.7) --------------------------------------
 
-  /** A dish that is on the menu but whose batch has not been built yet. */
-  function notBuilt(name: string) {
-    return async (): Promise<never> => {
-      throw new Error(`FAKE_NOT_BUILT_YET: ${name}`);
-    };
-  }
+  const chat = createChatDishes({ db, requireMe, myMembership });
 
   return {
     signUp,
@@ -446,11 +441,11 @@ export function createFakeApi(options: FakeApiOptions = {}): GrihoApi {
     removeMember: call(members.removeMember),
     leaveBuilding: call(members.leaveBuilding),
 
-    // Batch 3: chat.
-    getOrCreateConversation: notBuilt('getOrCreateConversation'),
-    listConversations: notBuilt('listConversations'),
-    getMessages: notBuilt('getMessages'),
-    sendMessage: notBuilt('sendMessage'),
-    deleteMessage: notBuilt('deleteMessage'),
+    // Batch 3: chat (the rules live in ./fakeChat.ts).
+    getOrCreateConversation: call(chat.getOrCreateConversation),
+    listConversations: call(chat.listConversations),
+    getMessages: call(chat.getMessages),
+    sendMessage: call(chat.sendMessage),
+    deleteMessage: call(chat.deleteMessage),
   };
 }

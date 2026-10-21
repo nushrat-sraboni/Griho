@@ -17,6 +17,17 @@ export function canRemove(myRole: Role, target: Pick<MemberListItem, 'role'>): b
   return myRole === 'owner' && target.role !== 'owner';
 }
 
+/** Splits the building's members into guards and everyone else (for the counts). */
+export function splitGuards(all: MemberListItem[]): {
+  people: MemberListItem[];
+  guards: MemberListItem[];
+} {
+  return {
+    people: all.filter((member) => member.role !== 'guard'),
+    guards: all.filter((member) => member.role === 'guard'),
+  };
+}
+
 function plural(count: number, one: string, many: string): string {
   return `${count} ${count === 1 ? one : many}`;
 }

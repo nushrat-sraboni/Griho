@@ -208,7 +208,7 @@ describe('answering requests', () => {
 });
 
 describe('the people list', () => {
-  it('shows other owners, the manager and tenants, never guards or me', async () => {
+  it('shows everyone else, guards included, but never me', async () => {
     const { api } = setup();
     await loginAs(api, 'rahim');
     const people = await api.listMembers({ building_id: SEED.building });
@@ -216,14 +216,20 @@ describe('the people list', () => {
       ['Salma', 'owner'],
       ['Jamal', 'manager'],
       ['Karima', 'tenant'],
+      ['Gopal', 'guard'],
     ]);
     expect(people.find((p) => p.display_name === 'Karima')?.flat_label).toBe('A-2');
   });
 
-  it('keeps the member list from guards and outsiders', async () => {
+  it('shows a guard the other people of the building too', async () => {
     const { api } = setup();
     await loginAs(api, 'gopal');
-    expect(await errorCodeOf(api.listMembers({ building_id: SEED.building }))).toBe('NOT_ALLOWED');
+    const people = await api.listMembers({ building_id: SEED.building });
+    expect(people.map((p) => p.display_name)).toEqual(['Rahim', 'Salma', 'Jamal', 'Karima']);
+  });
+
+  it('keeps the member list from outsiders', async () => {
+    const { api } = setup();
     await loginAs(api, 'nina');
     expect(await errorCodeOf(api.listMembers({ building_id: SEED.building }))).toBe('NOT_A_MEMBER');
   });
