@@ -19,9 +19,11 @@ type Props = {
   /** The tile's background color. */
   tileColor: string;
   onPress: () => void;
+  /** A small amber number on the right (for example how many requests are waiting). Hidden when 0 or missing. */
+  badge?: number;
 };
 
-export default function MenuCard({ title, body, icon, tileColor, onPress }: Props) {
+export default function MenuCard({ title, body, icon, tileColor, onPress, badge }: Props) {
   return (
     <Pressable
       style={styles.card}
@@ -40,6 +42,11 @@ export default function MenuCard({ title, body, icon, tileColor, onPress }: Prop
         <Text style={styles.title}>{title}</Text>
         <Text style={styles.body}>{body}</Text>
       </View>
+      {badge ? (
+        <View style={styles.badge} accessibilityElementsHidden importantForAccessibility="no">
+          <Text style={styles.badgeText}>{badge}</Text>
+        </View>
+      ) : null}
       <Svg
         width={20}
         height={20}
@@ -73,6 +80,16 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
   },
+  badge: {
+    minWidth: 28,
+    height: 28,
+    paddingHorizontal: 8,
+    borderRadius: 14,
+    backgroundColor: colors.amber,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  badgeText: { fontFamily: fonts.extraBold, fontSize: 13, color: colors.onAmber },
   text: { flex: 1 },
   title: { fontFamily: fonts.bold, fontSize: 17, color: colors.ink, letterSpacing: -0.2 },
   body: {

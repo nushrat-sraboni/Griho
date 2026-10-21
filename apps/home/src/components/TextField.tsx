@@ -22,7 +22,7 @@ type Props = {
   /** A short sentence shown in red under the box. The box gets a red border. */
   error?: string;
   /** Capital letters: 'words' suits a name, 'none' suits an email or a phone number. */
-  capitalize?: 'none' | 'words' | 'sentences';
+  capitalize?: 'none' | 'words' | 'sentences' | 'characters';
   /** Tells the phone what to suggest. Leave out for the sensible default. */
   autoComplete?: TextInputProps['autoComplete'];
   /** A short grey help sentence under the box. Hidden while an error is showing. */

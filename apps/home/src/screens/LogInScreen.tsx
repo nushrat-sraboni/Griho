@@ -28,9 +28,11 @@ import { cardStyle, colors, fonts } from '../theme';
 type Props = {
   onLoggedIn: (account: Account) => void;
   onGoToSignUp: () => void;
+  /** A green sentence shown at the top (for example "Your account was deleted."), or null. */
+  notice?: string | null;
 };
 
-export default function LogInScreen({ onLoggedIn, onGoToSignUp }: Props) {
+export default function LogInScreen({ onLoggedIn, onGoToSignUp, notice = null }: Props) {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [error, setError] = useState<string | null>(null);
@@ -51,6 +53,8 @@ export default function LogInScreen({ onLoggedIn, onGoToSignUp }: Props) {
   return (
     <Screen>
       <Logo />
+
+      {notice ? <Notice kind="success" text={notice} /> : null}
 
       <View style={styles.eyebrow}>
         <Eyebrow text="WELCOME BACK" />

@@ -4,11 +4,12 @@
 // person, shows today's date, and lists every building they belong to with
 // their role there. Tapping a building opens it and makes it the active one.
 // A person with no building yet sees an invitation to make or join one.
-// "Create building" opens the create form. "Join with code" only says "coming
-// soon" for now, because joining is built in a later step.
+// "Create building" opens the create form. "Join with code" opens the join form.
+// Requests the person sent that nobody has answered yet are shown in a yellow
+// "Waiting for an answer" section. At the bottom: Log out, and "Delete my account".
 // Owned by Bishal.
 
-import { ActivityIndicator, Alert, StyleSheet, Text, View } from 'react-native';
+import { ActivityIndicator, StyleSheet, Text, View } from 'react-native';
 import type { Account } from '@griho/shared';
 
 import { api, type MembershipWithLastOwner } from '../api';
@@ -20,6 +21,8 @@ import Logo from '../components/Logo';
 import Notice from '../components/Notice';
 import Screen from '../components/Screen';
 import TealCard from '../components/TealCard';
+import TextLink from '../components/TextLink';
+import WaitingRequestCard from '../components/WaitingRequestCard';
 import { formatEyebrowDate, getGreeting } from '../greeting';
 import { cardStyle, colors, fonts } from '../theme';
 import { useLoad } from '../useLoad';
@@ -30,21 +33,26 @@ type Props = {
   activeBuildingId: string | null;
   onOpenBuilding: (membership: MembershipWithLastOwner) => void;
   onCreateBuilding: () => void;
+  onJoinWithCode: () => void;
+  onDeleteAccount: () => void;
   onLogOut: () => void;
+  /** A green "it worked" sentence to show at the top (for example "You left Blue Court."), or null. */
+  notice: string | null;
 };
-
-function showComingSoon() {
-  Alert.alert('Coming soon', 'This part is built in a later step.');
-}
 
 export default function MyBuildingsScreen({
   account,
   activeBuildingId,
   onOpenBuilding,
   onCreateBuilding,
+  onJoinWithCode,
+  onDeleteAccount,
   onLogOut,
+  notice,
 }: Props) {
   const { data: memberships, error, loading, reload } = useLoad(() => api.getMyMemberships());
+  const { data: myRequests } = useLoad(() => api.listMyJoinRequests());
+  const waiting = (myRequests ?? []).filter((request) => request.status === 'pending');
   const now = new Date();
   const firstLetter = account.display_name.trim().charAt(0).toUpperCase();
   const hasBuildings = !!memberships && memberships.length > 0;
@@ -74,6 +82,19 @@ export default function MyBuildingsScreen({
           ? 'Pick a building to open it.'
           : 'Your home, your community, all in one place.'}
       </Text>
+
+      {notice ? <Notice kind="success" text={notice} /> : null}
+
+      {waiting.length > 0 ? (
+        <>
+          <Text style={styles.sectionLabel}>WAITING FOR AN ANSWER</Text>
+          <View style={styles.list}>
+            {waiting.map((request) => (
+              <WaitingRequestCard key={request.request_id} request={request} />
+            ))}
+          </View>
+        </>
+      ) : null}
 
       {loading ? (
         <ActivityIndicator
@@ -115,7 +136,7 @@ export default function MyBuildingsScreen({
                 label="Create building"
                 onPress={onCreateBuilding}
               />
-              <Button variant="ghost" compact label="Join with code" onPress={showComingSoon} />
+              <Button variant="ghost" compact label="Join with code" onPress={onJoinWithCode} />
             </View>
           </TealCard>
 
@@ -156,7 +177,7 @@ export default function MyBuildingsScreen({
               <Button compact arrow label="Create building" onPress={onCreateBuilding} />
             </View>
             <View style={styles.actionHalf}>
-              <Button compact variant="outline" label="Join with code" onPress={showComingSoon} />
+              <Button compact variant="outline" label="Join with code" onPress={onJoinWithCode} />
             </View>
           </View>
         </>
@@ -164,6 +185,7 @@ export default function MyBuildingsScreen({
 
       <View style={styles.spacer} />
       <Button variant="outline" label="Log out" onPress={onLogOut} />
+      <TextLink danger label="Delete my account" onPress={onDeleteAccount} />
     </Screen>
   );
 }

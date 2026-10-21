@@ -24,6 +24,7 @@ export const SEED = {
     karima: 'acc-karima',
     nina: 'acc-nina',
     jamal: 'acc-jamal',
+    gopal: 'acc-gopal',
   },
   emails: {
     rahim: 'rahim@example.com',
@@ -31,6 +32,7 @@ export const SEED = {
     karima: 'karima@example.com',
     nina: 'nina@example.com',
     jamal: 'jamal@example.com',
+    gopal: 'gopal@example.com',
   },
   building: 'bld-green',
   flats: { a1: 'flat-a1', a2: 'flat-a2', b1: 'flat-b1', c1: 'flat-c1' },
@@ -54,6 +56,7 @@ export const SEED = {
     salma: 'mem-salma',
     karima: 'mem-karima',
     jamal: 'mem-jamal',
+    gopal: 'mem-gopal',
   },
   joinRequestNina: 'req-nina',
   conversationRahimKarima: 'conv-rahim-karima',
@@ -105,6 +108,15 @@ export function createSeededDatabase(): FakeDatabase {
       password: FAKE_PASSWORD,
       deleted: false,
     },
+    // A guard of Green Tower (a Staff account), so the guards list has someone in it.
+    {
+      id: accounts.gopal,
+      app: 'staff',
+      displayName: 'Gopal',
+      email: emails.gopal,
+      password: FAKE_PASSWORD,
+      deleted: false,
+    },
   );
 
   db.buildings.push({
@@ -152,6 +164,14 @@ export function createSeededDatabase(): FakeDatabase {
       accountId: accounts.jamal,
       buildingId: SEED.building,
       role: 'manager',
+      flatId: null,
+      status: 'active',
+    },
+    {
+      id: memberships.gopal,
+      accountId: accounts.gopal,
+      buildingId: SEED.building,
+      role: 'guard',
       flatId: null,
       status: 'active',
     },
