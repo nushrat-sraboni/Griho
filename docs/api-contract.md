@@ -303,11 +303,11 @@ Each block says: **plain words**, **who can call**, **inputs**, **returns**, **e
 
 #### `list_members(building_id)` — Home, Staff **(proposed)**
 - **Plain words:** the member list I use to find someone to message (PRD 5.6). Shows name, flat, role.
-- **Who:** any active owner, tenant, or manager of the building.
-- **Returns:** `MemberListItem[]`. **Guards are never included.** I am not included either.
+- **Who:** any active member of the building (owner, tenant, manager, or guard).
+- **Returns:** `MemberListItem[]`. **Guards are included** (role `guard`), so everyone can message them. I am not included.
 
 #### `list_guards(building_id)` — Staff, Home **(proposed)**
-- **Plain words:** the guards of the building, so they can be removed.
+- **Plain words:** only the guards of the building, so they can be removed. (Guards also appear in `list_members`.)
 - **Who:** owners and the manager.
 - **Returns:** `MemberListItem[]` (role is always `guard`)
 
@@ -334,8 +334,8 @@ Each block says: **plain words**, **who can call**, **inputs**, **returns**, **e
 #### `get_or_create_conversation(building_id, other_account_id)` — Home, Staff
 - **Plain words:** open the chat with this person (or start it if it is new).
 - **Returns:** `{ conversation_id }`
-- **Errors:** `NOT_A_MEMBER`, `GUARD_CANNOT_MESSAGE`, `NOT_IN_SAME_BUILDING`, `CANNOT_MESSAGE_SELF`
-- **Rule:** both people must be active owners, tenants, or the manager of that building. There is only one thread per pair per building.
+- **Errors:** `NOT_A_MEMBER`, `NOT_IN_SAME_BUILDING`, `CANNOT_MESSAGE_SELF`
+- **Rule:** both people must be active members of that building, in any role (owner, tenant, manager, or guard). There is only one thread per pair per building.
 
 #### `list_conversations(building_id)` — Home, Staff **(proposed)**
 - **Plain words:** my chats in this building.
@@ -351,7 +351,7 @@ Each block says: **plain words**, **who can call**, **inputs**, **returns**, **e
 - **Plain words:** send a plain text message.
 - **Inputs:** `body`: text, trimmed, 1 to 2000 characters.
 - **Returns:** `Message`
-- **Errors:** `NOT_ALLOWED`, `INVALID_INPUT`, `GUARD_CANNOT_MESSAGE`
+- **Errors:** `NOT_ALLOWED`, `INVALID_INPUT`
 
 #### `delete_message(message_id)` — Home, Staff
 - **Plain words:** delete a message **I** sent. It disappears for everyone and shows "Message deleted".
@@ -373,10 +373,10 @@ Each block says: **plain words**, **who can call**, **inputs**, **returns**, **e
 | `create_code` (guard) | ✅ | ❌ | ✅ | ❌ |
 | `list_codes`, `set_code_status` | ✅ | ❌ | ✅ (guard codes) | ❌ |
 | `list_pending_join_requests`, `decide_join_request` | ✅ | ❌ | ✅ (guard requests) | ❌ |
-| `list_members` | ✅ | ✅ | ✅ | ❌ |
+| `list_members` | ✅ | ✅ | ✅ | ✅ |
 | `list_guards` | ✅ | ❌ | ✅ | ❌ |
 | `remove_member` | ✅ (tenant, manager, guard) | ❌ | ✅ (guard) | ❌ |
-| Chat functions | ✅ | ✅ | ✅ | ❌ |
+| Chat functions | ✅ | ✅ | ✅ | ✅ |
 
 This table follows the PRD permissions matrix (PRD Section 6).
 
@@ -402,7 +402,7 @@ This table follows the PRD permissions matrix (PRD Section 6).
 | `FLAT_LABEL_TAKEN` | Another flat in this building already has that label. |
 | `FLAT_NOT_UNCLAIMED` | The flat already has an owner. |
 | `TYPED_NAME_MISMATCH` | The typed name does not match (PRD rule 13). |
-| `GUARD_CANNOT_MESSAGE` | Guards cannot send or receive messages. |
+| `GUARD_CANNOT_MESSAGE` | **Retired.** Guards can now message, so this is no longer returned. |
 | `NOT_IN_SAME_BUILDING` | The two people do not share this building. |
 | `CANNOT_MESSAGE_SELF` | A person tried to open a chat with themselves. |
 | `MESSAGE_ALREADY_DELETED` | The message was already deleted. |
