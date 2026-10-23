@@ -27,7 +27,7 @@ Griho ships as two separate apps with separate accounts:
 ### Non-Goals (MVP)
 - Group chats
 - Building-wide announcements
-- Guard messaging or any guard features beyond joining
+- Guard features beyond joining and messaging
 - Co-owned flats (one flat, one owner account)
 - Manual building deletion
 - Message recovery or grace periods after deletion
@@ -43,10 +43,10 @@ Griho ships as two separate apps with separate accounts:
 
 | Role | App | Account type | How they join | Can send DMs to | Can receive DMs from |
 |---|---|---|---|---|---|
-| Owner | Griho Home | Separate account | Building code, approved by an owner or manager | Owners, tenants, manager | Owners, tenants, manager |
-| Tenant | Griho Home | Separate account | Flat code, approved by an owner or manager | Owners, tenants, manager | Owners, tenants, manager |
-| Manager | Griho Staff | Separate account | Manager code from owner's building portal, approved by an owner | Owners, tenants | Owners, tenants |
-| Guard | Griho Staff | Separate account | Guard code from manager or owner, approved by the manager (or an owner if there is no manager) | None | None |
+| Owner | Griho Home | Separate account | Building code, approved by an owner or manager | Everyone in the building | Everyone in the building |
+| Tenant | Griho Home | Separate account | Flat code, approved by an owner or manager | Everyone in the building | Everyone in the building |
+| Manager | Griho Staff | Separate account | Manager code from owner's building portal, approved by an owner | Everyone in the building | Everyone in the building |
+| Guard | Griho Staff | Separate account | Guard code from manager or owner, approved by the manager (or an owner if there is no manager) | Everyone in the building | Everyone in the building |
 
 **Account rules:**
 - A person who is an owner or tenant in a building and also a manager in another building uses two accounts, one per app. A single login across both apps is not allowed.
@@ -120,10 +120,9 @@ Griho ships as two separate apps with separate accounts:
 
 ### 5.6 Direct Messages
 - One-to-one only. No group chats.
-- Allowed pairs: owner ↔ owner, owner ↔ tenant, owner ↔ manager, tenant ↔ tenant, tenant ↔ manager.
-- Guards cannot send or receive messages.
+- Anyone in a building can message anyone else in the same building: owners, tenants, the manager, and guards.
 - Messages are stored as part of the building record.
-- Members find each other through a **member list** for the building. It shows each member's name, flat, and role. Guards are not shown.
+- Members find each other through a **member list** for the building. It shows each member's name, flat, and role. Guards are shown too, with the role "Guard".
 - Messages are plain text.
 - A member can delete a message they sent. It is removed for everyone, and the chat shows "Message deleted".
 
@@ -173,7 +172,8 @@ Griho ships as two separate apps with separate accounts:
 ### 5.14 Guard
 - Joins through a guard code.
 - Gets an account linked to the building.
-- No features, no messaging, no other actions in v1.
+- Can send and receive direct messages with anyone in the building (see 5.6).
+- No other features or actions in v1.
 
 ### 5.15 Notifications
 - Members get push alerts on their phone for:
@@ -202,8 +202,8 @@ Griho ships as two separate apps with separate accounts:
 | Remove tenant | ✅ | ❌ | ❌ | ❌ |
 | Remove manager | ✅ | ❌ | ❌ | ❌ |
 | Remove guard | ✅ | ❌ | ✅ | ❌ |
-| Send and receive DMs | ✅ | ✅ | ✅ | ❌ |
-| Delete own message | ✅ | ✅ | ✅ | ❌ |
+| Send and receive DMs | ✅ | ✅ | ✅ | ✅ |
+| Delete own message | ✅ | ✅ | ✅ | ✅ |
 | Switch active building | ✅ | ❌ | ❌ | ❌ |
 | Leave building or delete account | ✅ | ✅ | ✅ | ✅ |
 
@@ -222,7 +222,7 @@ Griho ships as two separate apps with separate accounts:
 9. Co-owned flats are not supported.
 10. Buildings cannot be deleted manually. Deletion happens only when the last owner leaves or deletes.
 11. Messages belong to the building and are deleted with it.
-12. Guards cannot send or receive messages.
+12. Everyone in a building, guards included, can send and receive messages with anyone else in the same building.
 13. All exits (leave, remove, delete) require typed-name confirmation.
 14. Removed or left members show as "Former member." Deleted accounts show as "Deleted account."
 15. The building name is visible on every screen in Griho Home.
@@ -270,7 +270,7 @@ Griho ships as two separate apps with separate accounts:
 ## 11. Out of Scope (MVP)
 
 - Group chats and announcements
-- Guard messaging and guard features
+- Guard features beyond joining and messaging
 - Co-owned flats
 - Manual building deletion
 - Message grace periods, recovery, or export
@@ -296,8 +296,8 @@ All questions that were open in Draft v1 were answered on 2026-10-14 while plann
 | 5 | When a new owner claims an unclaimed flat, do previous tenants remain? | No. They must rejoin with a new flat code. |
 | 6 | Can a removed tenant rejoin the same flat? | Yes, with a new request and approval. No cooldown or block list in the MVP. |
 | 7 | Can one tenant hold more than one flat in the same building? | No. One flat per tenant per building. |
-| 8 | How does a member find another member to message? | A member list for the building showing name, flat, and role. Guards are hidden. |
-| 9 | Guard messaging direction | Guards can neither send nor receive. |
+| 8 | How does a member find another member to message? | A member list for the building showing name, flat, and role. Guards are shown with the role Guard. |
+| 9 | Guard messaging direction | Guards can send and receive, like everyone else in the building. (Changed from the first plan, which blocked guards.) |
 | 10 | Message features | Plain text, plus deleting your own message (removed for everyone). No editing, read receipts, or media. |
 | 11 | Blocking and reporting | Not in the MVP. |
 | 12 | Notifications | Basic push alerts are in the MVP (see 5.15). |

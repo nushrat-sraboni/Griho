@@ -49,7 +49,7 @@ None of these folders exist yet.
 
 - Tests come first. Before anything goes to a remote branch, the tests must pass.
 - Most important test of all: **a member of building A reads zero rows from building B**, on every table.
-- Also test: guards cannot message, rejected requests use no code slot, last-owner exit deletes everything, and removed members lose access immediately.
+- Also test: guards can message like everyone else, rejected requests use no code slot, last-owner exit deletes everything, and removed members lose access immediately.
 
 ## Seed data (planned)
 

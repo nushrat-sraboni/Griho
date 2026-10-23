@@ -23,7 +23,7 @@ export const ERROR_CODES = [
   'FLAT_LABEL_TAKEN',
   'FLAT_NOT_UNCLAIMED',
   'TYPED_NAME_MISMATCH',
-  'GUARD_CANNOT_MESSAGE',
+  'GUARD_CANNOT_MESSAGE', // Retired: guards can message now. Never returned; kept so the apps still compile.
   'NOT_IN_SAME_BUILDING',
   'CANNOT_MESSAGE_SELF',
   'MESSAGE_ALREADY_DELETED',

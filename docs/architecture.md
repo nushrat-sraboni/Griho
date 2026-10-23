@@ -297,8 +297,8 @@ Who can do what:
   manager** (decided in Section 12).
 - **Remove:** owners remove tenants and the manager. Owners and the manager
   remove guards.
-- **Messaging:** guards are blocked by the function, so there are no guard
-  conversations. The member list also hides guards.
+- **Messaging:** every active member of a building, guards included, can message
+  every other active member of the same building. The member list shows guards.
 
 ### 7.4 Codes and join requests
 
@@ -356,9 +356,9 @@ Person enters code
 
 ### 8.3 Send a direct message
 
-1. Member opens the building member list (name, flat and role, guards hidden).
+1. Member opens the building member list (name, flat and role, guards included).
 2. Picks a person. The app calls `get_or_create_conversation`, which checks both
-   people are active, non-guard members of the same building.
+   people are active members of the same building (any role).
 3. `send_message` inserts the message. Realtime delivers it to the other
    person's open chat. A database trigger calls the push Edge Function if the
    person's app is closed.
@@ -449,7 +449,7 @@ The database does not need to know which building is "active".
 Testing priorities, in order of importance:
 
 1. **Database security tests**: building isolation, role permissions, guards
-   cannot message, used count only changes on approval, typed-name checks.
+   can message like everyone else, used count only changes on approval, typed-name checks.
 2. **Function tests** for the exit flows (leave, owner leave, last owner, delete
    account).
 3. **Shared package unit tests** (validation, label logic on the client).
@@ -489,8 +489,8 @@ questions (Section 12 of the PRD).
 | 5 | Claiming an unclaimed flat: old tenants? | They must rejoin with a new flat code. |
 | 6 | Can a removed tenant rejoin? | Yes, with a new request and approval. No block list in the MVP. |
 | 7 | Tenant in many flats of one building? | No. One flat per tenant per building. |
-| 8 | How to find someone to message | A building member list with name, flat and role. Guards are hidden. |
-| 9 | Guard messaging direction | Guards can neither send nor receive. |
+| 8 | How to find someone to message | A building member list with name, flat and role. Guards are shown with the role Guard. |
+| 9 | Guard messaging direction | Guards can send and receive, like everyone else in the building. (Changed from the first plan, which blocked guards.) |
 | 10 | Message features | Plain text, plus delete own message (removed for everyone, shows "Message deleted"). No edit, read receipts or media. |
 | 11 | Block and report | Not in the MVP. |
 | 12 | Notifications | Basic push alerts are in the MVP. |
