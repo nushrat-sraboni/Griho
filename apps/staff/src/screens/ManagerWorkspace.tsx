@@ -1,7 +1,7 @@
 // apps/staff/src/screens/ManagerWorkspace.tsx
 //
 // Everything a manager sees once they belong to a building: the four screens of the
-// manager workspace (Overview, Access, Guards, Messages) and the bottom menu that
+// manager workspace (Overview, Access, Guards, Messages, Settings) and the bottom menu that
 // switches between them. When something changes (a request answered, a code made, a
 // guard removed, a message sent), the Overview numbers and the little badge on the
 // Access tab are read again. Owned by Sraboni.
@@ -15,6 +15,7 @@ import AccessScreen from './AccessScreen';
 import GuardsScreen from './GuardsScreen';
 import ManagerOverviewScreen from './ManagerOverviewScreen';
 import MessagesFlow from './MessagesFlow';
+import SettingsScreen from './SettingsScreen';
 
 type Props = {
   displayName: string;
@@ -68,8 +69,6 @@ export default function ManagerWorkspace({ displayName, membership, onLeft, onLo
           membership={membership}
           refreshKey={refreshKey}
           onGoToAccess={() => setTab('access')}
-          onLeft={onLeft}
-          onLogOut={onLogOut}
         />
       ) : null}
       {tab === 'access' ? (
@@ -84,6 +83,14 @@ export default function ManagerWorkspace({ displayName, membership, onLeft, onLo
           displayName={displayName}
           buildingName={membership.building_name}
           onChanged={changed}
+        />
+      ) : null}
+      {tab === 'settings' ? (
+        <SettingsScreen
+          displayName={displayName}
+          membership={membership}
+          onLeft={onLeft}
+          onLogOut={onLogOut}
         />
       ) : null}
     </Screen>

@@ -2,9 +2,9 @@
 //
 // The manager's first screen, matching the "Manager overview" design: a greeting,
 // the building name, a green banner saying how many guards are waiting for a yes
-// (with a button to the Access screen), and four number cards. The leave and log-out
-// buttons sit at the very bottom. The numbers come from the pretend backend until
-// the real one exists. Owned by Sraboni.
+// (with a button to the Access screen), and four number cards. Leaving the building,
+// logging out, and deleting the account are on the Settings tab. The numbers come from
+// the pretend backend until the real one exists. Owned by Sraboni.
 
 import { useEffect, useState } from 'react';
 import { Pressable, StyleSheet, Text, View } from 'react-native';
@@ -13,7 +13,6 @@ import Avatar from '../components/Avatar';
 import Brand from '../components/Brand';
 import Eyebrow from '../components/Eyebrow';
 import HeroCard from '../components/HeroCard';
-import LeaveSection from '../components/LeaveSection';
 import { getManagerCounts, type Membership } from '../fakeBackend';
 import { listConversations } from '../fakeMessages';
 import { friendlyErrorMessage } from '../friendlyMessages';
@@ -28,8 +27,6 @@ type Props = {
   /** Changes whenever the numbers might have changed, so this screen reads them again. */
   refreshKey: number;
   onGoToAccess: () => void;
-  onLeft: () => void;
-  onLogOut: () => void;
 };
 
 // One number card: a coloured square, a big number, and a small grey label.
@@ -60,8 +57,6 @@ export default function ManagerOverviewScreen({
   membership,
   refreshKey,
   onGoToAccess,
-  onLeft,
-  onLogOut,
 }: Props) {
   const [counts, setCounts] = useState<Counts | null>(null);
   const [error, setError] = useState<string | null>(null);
@@ -133,14 +128,6 @@ export default function ManagerOverviewScreen({
         />
         <StatCard tint="#f8e8e2" accent="#9a4d3a" value={counts?.chats ?? 0} label="Open chats" />
       </View>
-
-      <View style={styles.spacer} />
-      <LeaveSection
-        displayName={displayName}
-        buildingName={membership.building_name}
-        onLeft={onLeft}
-        onLogOut={onLogOut}
-      />
     </>
   );
 }

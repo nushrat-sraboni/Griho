@@ -53,7 +53,7 @@ This file is read when a session works inside `apps/staff/`. It adds to the root
 
 The app follows the Griho Staff design and talks to a **pretend backend** (`src/fakeBackend.ts`), because the real backend is not built yet. Delete the pretend one when it is.
 
-**Built:** log in, sign up, join with a code, waiting for approval, the guard workspace (a Home tab, a Messages tab, and a Settings tab holding leave building, log out, and delete account), and the manager workspace's Overview, Access, and Guards screens (answer guard requests, make, share, and switch guard codes, see and remove guards with a typed-name confirmation), and Messages for both managers and guards (chat list, new message, chat, and deleting your own messages), and deleting your account (with a typed-name confirmation) from every screen after log-in.
+**Built:** log in, sign up, join with a code, waiting for approval, the guard workspace (a Home tab, a Messages tab, and a Settings tab holding leave building, log out, and delete account), and the manager workspace's Overview, Access, Guards, and Settings screens (answer guard requests, make, share, and switch guard codes, see and remove guards with a typed-name confirmation), and Messages for both managers and guards (chat list, new message, chat, and deleting your own messages), and deleting your account (with a typed-name confirmation) from the Settings tab, or from the join and waiting screens before you have a building.
 
 **Not built yet:** live updates, phone alerts, and unread counts for chats (they need the real backend), the exact Plus Jakarta Sans font, and the bottom menu icons. The font and icons need packages added by Shafin.
 
