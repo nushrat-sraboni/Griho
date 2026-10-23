@@ -13,7 +13,7 @@ This file is read when a session works inside `apps/staff/`. It adds to the root
 **Griho Staff** is the phone app for **managers** and **guards**. It is built with React Native (Expo) and TypeScript.
 
 - **Manager** can: join with a manager code (made by an owner), make guard codes, approve or reject guard join requests, see and disable or delete guard codes, see and remove guards, message anyone in the building (owners, tenants, and guards), and leave or delete their account.
-- **Guard** can: join with a guard code, then leave or delete their account. **Guards can also message anyone in their building (owners, tenants, the manager, and other guards) and anyone can message them.** They have no other features in the MVP. After a guard is approved, show a simple home screen with the building name and a leave option, plus a Messages tab.
+- **Guard** can: join with a guard code, then leave or delete their account. **Guards can also message anyone in their building (owners, tenants, the manager, and other guards) and anyone can message them.** They have no other features in the MVP. After a guard is approved, show a simple home screen with the building name, plus a Messages tab and a Settings tab (leave the building, log out, delete account).
 - **Rule change waiting for Shafin:** the PRD, architecture, and API contract still say guards cannot message. Sraboni decided guards can. Until Shafin updates those documents and the backend, the Staff app's pretend chat (`src/fakeMessages.ts`) lets guards message, and the real backend will not. Do not remove it without asking.
 - A building has **at most one manager**. When the manager leaves, the guards stay. Until a new manager joins, owners (in the Home app) make guard codes and approve guards.
 - Only **Staff accounts** work here. A Home account that logs in must be signed out with a clear message (error code `WRONG_APP`).
@@ -53,7 +53,7 @@ This file is read when a session works inside `apps/staff/`. It adds to the root
 
 The app follows the Griho Staff design and talks to a **pretend backend** (`src/fakeBackend.ts`), because the real backend is not built yet. Delete the pretend one when it is.
 
-**Built:** log in, sign up, join with a code, waiting for approval, the guard home screen (with leaving a building), and the manager workspace's Overview, Access, and Guards screens (answer guard requests, make, share, and switch guard codes, see and remove guards with a typed-name confirmation), and Messages for both managers and guards (chat list, new message, chat, and deleting your own messages), and deleting your account (with a typed-name confirmation) from every screen after log-in.
+**Built:** log in, sign up, join with a code, waiting for approval, the guard workspace (a Home tab, a Messages tab, and a Settings tab holding leave building, log out, and delete account), and the manager workspace's Overview, Access, and Guards screens (answer guard requests, make, share, and switch guard codes, see and remove guards with a typed-name confirmation), and Messages for both managers and guards (chat list, new message, chat, and deleting your own messages), and deleting your account (with a typed-name confirmation) from every screen after log-in.
 
 **Not built yet:** live updates, phone alerts, and unread counts for chats (they need the real backend), the exact Plus Jakarta Sans font, and the bottom menu icons. The font and icons need packages added by Shafin.
 
