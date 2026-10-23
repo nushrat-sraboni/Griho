@@ -1,7 +1,7 @@
 // apps/staff/src/components/BottomNav.tsx
 //
 // The bottom menu of Griho Staff. A manager sees four tabs (Overview, Access, Guards,
-// Messages) and a guard sees two (Home, Messages). The tab you are on is shown on a
+// Messages) and a guard sees three (Home, Messages, Settings). The tab you are on is shown on a
 // pale green pill, like the Griho Staff design. (The design also has little icons.
 // Those need a drawing library the Staff app does not have yet, so for now the tabs
 // show words only.) Owned by Sraboni.
@@ -11,7 +11,7 @@ import { Pressable, StyleSheet, Text, View } from 'react-native';
 import { colors } from '../styles';
 
 export type ManagerTab = 'overview' | 'access' | 'guards' | 'messages';
-export type GuardTab = 'home' | 'messages';
+export type GuardTab = 'home' | 'messages' | 'settings';
 
 export const MANAGER_TABS: { id: ManagerTab; label: string }[] = [
   { id: 'overview', label: 'Overview' },
@@ -23,6 +23,7 @@ export const MANAGER_TABS: { id: ManagerTab; label: string }[] = [
 export const GUARD_TABS: { id: GuardTab; label: string }[] = [
   { id: 'home', label: 'Home' },
   { id: 'messages', label: 'Messages' },
+  { id: 'settings', label: 'Settings' },
 ];
 
 type Props<T extends string> = {

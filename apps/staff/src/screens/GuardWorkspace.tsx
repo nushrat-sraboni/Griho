@@ -1,15 +1,19 @@
 // apps/staff/src/screens/GuardWorkspace.tsx
 //
-// Everything a guard sees once they belong to a building: the guard home screen and
-// the Messages screens, with a two-tab bottom menu (Home and Messages). Guards can
-// message anyone in their building and anyone can message them. Owned by Sraboni.
+// Everything a guard sees once they belong to a building: the guard home screen, the
+// Messages screens, and the Settings screen, with a three-tab bottom menu (Home,
+// Messages, Settings). Guards can message anyone in their building and anyone can
+// message them. Leaving the building, logging out, and deleting the account are on
+// the Settings tab. Owned by Sraboni.
 
 import { useState } from 'react';
 
 import BottomNav, { GUARD_TABS, type GuardTab } from '../components/BottomNav';
+import Screen from '../components/Screen';
 import type { Membership } from '../fakeBackend';
 import GuardHomeScreen from './GuardHomeScreen';
 import MessagesFlow from './MessagesFlow';
+import SettingsScreen from './SettingsScreen';
 
 type Props = {
   displayName: string;
@@ -33,13 +37,18 @@ export default function GuardWorkspace({ displayName, membership, onLeft, onLogO
     );
   }
 
-  return (
-    <GuardHomeScreen
-      displayName={displayName}
-      membership={membership}
-      footer={nav}
-      onLeft={onLeft}
-      onLogOut={onLogOut}
-    />
-  );
+  if (tab === 'settings') {
+    return (
+      <Screen footer={nav}>
+        <SettingsScreen
+          displayName={displayName}
+          membership={membership}
+          onLeft={onLeft}
+          onLogOut={onLogOut}
+        />
+      </Screen>
+    );
+  }
+
+  return <GuardHomeScreen displayName={displayName} membership={membership} footer={nav} />;
 }

@@ -2,9 +2,9 @@
 //
 // The home screen of a guard who belongs to a building. It matches the "Guard home"
 // design: a welcome line, a green banner with the building name and address, the
-// guard's role and access, a note that guards have nothing else to do, and the
-// "Leave this building" and "Log out" buttons. Leaving asks the guard to type
-// their own name first. The bottom menu (Home and Messages) is passed in. Owned by Sraboni.
+// guard's role and access, and a note about what guards can do. Leaving the building,
+// logging out, and deleting the account are on the Settings tab, not here. The bottom
+// menu (Home, Messages, Settings) is passed in. Owned by Sraboni.
 
 import type { ReactNode } from 'react';
 import { StyleSheet, Text, View } from 'react-native';
@@ -12,7 +12,6 @@ import { StyleSheet, Text, View } from 'react-native';
 import Brand from '../components/Brand';
 import Eyebrow from '../components/Eyebrow';
 import HeroCard from '../components/HeroCard';
-import LeaveSection from '../components/LeaveSection';
 import Screen from '../components/Screen';
 import type { Membership } from '../fakeBackend';
 import { colors, styles } from '../styles';
@@ -20,13 +19,11 @@ import { colors, styles } from '../styles';
 type Props = {
   displayName: string;
   membership: Membership;
-  onLeft: () => void;
-  onLogOut: () => void;
   /** The bottom menu, shown at the bottom of the screen. */
   footer?: ReactNode;
 };
 
-// One row of the little "role and access" card: a title, a grey line, and a badge.
+// One row of the "role and access" card: a title, a grey line, and a badge.
 function InfoRow({ title, detail, badge }: { title: string; detail: string; badge: string }) {
   return (
     <View style={local.infoRow}>
@@ -39,13 +36,7 @@ function InfoRow({ title, detail, badge }: { title: string; detail: string; badg
   );
 }
 
-export default function GuardHomeScreen({
-  displayName,
-  membership,
-  onLeft,
-  onLogOut,
-  footer,
-}: Props) {
+export default function GuardHomeScreen({ displayName, membership, footer }: Props) {
   const firstName = displayName.trim().split(' ')[0];
 
   return (
@@ -69,15 +60,8 @@ export default function GuardHomeScreen({
 
       <Text style={styles.note}>
         You can message anyone in your building, and anyone can message you. Open Messages to start.
+        To leave the building or log out, open Settings.
       </Text>
-
-      <View style={styles.spacer} />
-      <LeaveSection
-        displayName={displayName}
-        buildingName={membership.building_name}
-        onLeft={onLeft}
-        onLogOut={onLogOut}
-      />
     </Screen>
   );
 }
