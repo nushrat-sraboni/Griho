@@ -14,7 +14,7 @@ This file is the first thing every new Claude Code session should read. It says 
 - It ships as **two separate apps with separate accounts**:
   - **Griho Home**: for owners and tenants.
   - **Griho Staff**: for managers and guards.
-- Roles: owner, tenant, manager, guard. Guards can only join; they cannot message.
+- Roles: owner, tenant, manager, guard. Every member, guards included, can send and receive messages with anyone else in the same building.
 - MVP leaves out group chats, announcements, photos, read receipts, message editing, blocking, owner transfer, and code expiry by date.
 
 **Current status:** planning is done (PRD, architecture, and API contract written) and the empty project skeleton is set up (the "scaffold"). Both apps open as simple "hello" screens and the shared toolbox is connected. **No real features exist yet.** The backend is not built.
