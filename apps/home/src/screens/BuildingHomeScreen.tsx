@@ -7,19 +7,13 @@
 // Cards, each with a short line of information:
 //   - Owners: "Join requests" (with a number badge), "Flats", "Join codes"
 //   - Owners and tenants: "People" (to find someone, and for owners to remove people)
-// At the bottom, everyone has a red "Leave this building" link.
+// Messages and "Leave this building" are in the bottom bar tabs (Messages, Settings).
 // Right after a building is created, a green "Your building is ready" message
 // is shown. Owned by Bishal.
 
 import { ActivityIndicator, StyleSheet, Text, View } from 'react-native';
 import Svg, { Circle, Path } from 'react-native-svg';
-import type {
-  CodeInfo,
-  ConversationItem,
-  Flat,
-  MemberListItem,
-  PendingRequestForApprover,
-} from '@griho/shared';
+import type { CodeInfo, Flat, MemberListItem, PendingRequestForApprover } from '@griho/shared';
 
 import { api, type MembershipWithLastOwner } from '../api';
 import BuildingBar from '../components/BuildingBar';
@@ -28,12 +22,10 @@ import Eyebrow from '../components/Eyebrow';
 import MenuCard from '../components/MenuCard';
 import Notice from '../components/Notice';
 import Screen from '../components/Screen';
-import TextLink from '../components/TextLink';
 import { roleLabel } from '../buildings';
 import { codesSummary } from '../codes';
 import { flatSummary } from '../flats';
 import { waitingSummary } from '../joining';
-import { chatsSummary } from '../messages';
 import { peopleSummary, splitGuards } from '../people';
 import { cardStyle, colors, fonts } from '../theme';
 import { useLoad } from '../useLoad';
@@ -47,8 +39,6 @@ type Props = {
   onOpenFlats: () => void;
   onOpenCodes: () => void;
   onOpenPeople: () => void;
-  onOpenMessages: () => void;
-  onLeave: () => void;
 };
 
 /** The count line for a card: "Loading...", the summary, or a nudge to tap when loading failed. */
@@ -70,8 +60,6 @@ export default function BuildingHomeScreen({
   onOpenFlats,
   onOpenCodes,
   onOpenPeople,
-  onOpenMessages,
-  onLeave,
 }: Props) {
   const isOwner = membership.role === 'owner';
   const buildingId = membership.building.id;
@@ -91,9 +79,6 @@ export default function BuildingHomeScreen({
     isOwner ? api.listCodes({ building_id: buildingId }) : Promise.resolve([]),
   );
   const peopleLoad = useLoad<MemberListItem[]>(() => api.listMembers({ building_id: buildingId }));
-  const chatsLoad = useLoad<ConversationItem[]>(() =>
-    api.listConversations({ building_id: buildingId }),
-  );
   const roleText = roleLabel(membership);
 
   const split = peopleLoad.data ? splitGuards(peopleLoad.data) : null;
@@ -190,26 +175,6 @@ export default function BuildingHomeScreen({
           </>
         ) : null}
         <MenuCard
-          title="Messages"
-          body={cardLine(chatsLoad, chatsSummary, 'Tap to see your chats')}
-          tileColor={colors.teal}
-          onPress={onOpenMessages}
-          icon={
-            <Svg
-              width={26}
-              height={26}
-              viewBox="0 0 24 24"
-              fill="none"
-              stroke={colors.page}
-              strokeWidth={2}
-              strokeLinecap="round"
-              strokeLinejoin="round"
-            >
-              <Path d="M4 5 H20 V16 H11 L6 20 V16 H4 Z" />
-            </Svg>
-          }
-        />
-        <MenuCard
           title="People"
           body={peopleLine}
           tileColor={colors.pillTeal}
@@ -267,9 +232,6 @@ export default function BuildingHomeScreen({
           </View>
         </View>
       ) : null}
-
-      <View style={styles.spacer} />
-      <TextLink danger label="Leave this building" onPress={onLeave} />
     </Screen>
   );
 }
@@ -304,5 +266,4 @@ const styles = StyleSheet.create({
   rowLine: { borderBottomWidth: 1, borderBottomColor: colors.chip },
   rowLabel: { fontFamily: fonts.bold, fontSize: 11, letterSpacing: 1.2, color: colors.muted },
   rowValue: { marginTop: 4, fontFamily: fonts.semiBold, fontSize: 15, color: colors.ink },
-  spacer: { flexGrow: 1, minHeight: 16 },
 });

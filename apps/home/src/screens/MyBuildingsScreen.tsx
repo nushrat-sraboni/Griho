@@ -6,10 +6,11 @@
 // A person with no building yet sees an invitation to make or join one.
 // "Create building" opens the create form. "Join with code" opens the join form.
 // Requests the person sent that nobody has answered yet are shown in a yellow
-// "Waiting for an answer" section. At the bottom: Log out, and "Delete my account".
+// "Waiting for an answer" section. The round badge at the top right opens Settings
+// (Log out, Delete my account), and a small "Log out" link sits next to it.
 // Owned by Bishal.
 
-import { ActivityIndicator, StyleSheet, Text, View } from 'react-native';
+import { ActivityIndicator, Pressable, StyleSheet, Text, View } from 'react-native';
 import type { Account } from '@griho/shared';
 
 import { api, type MembershipWithLastOwner } from '../api';
@@ -21,7 +22,6 @@ import Logo from '../components/Logo';
 import Notice from '../components/Notice';
 import Screen from '../components/Screen';
 import TealCard from '../components/TealCard';
-import TextLink from '../components/TextLink';
 import WaitingRequestCard from '../components/WaitingRequestCard';
 import { formatEyebrowDate, getGreeting } from '../greeting';
 import { cardStyle, colors, fonts } from '../theme';
@@ -34,7 +34,7 @@ type Props = {
   onOpenBuilding: (membership: MembershipWithLastOwner) => void;
   onCreateBuilding: () => void;
   onJoinWithCode: () => void;
-  onDeleteAccount: () => void;
+  onOpenSettings: () => void;
   onLogOut: () => void;
   /** A green "it worked" sentence to show at the top (for example "You left Blue Court."), or null. */
   notice: string | null;
@@ -46,7 +46,7 @@ export default function MyBuildingsScreen({
   onOpenBuilding,
   onCreateBuilding,
   onJoinWithCode,
-  onDeleteAccount,
+  onOpenSettings,
   onLogOut,
   notice,
 }: Props) {
@@ -61,13 +61,23 @@ export default function MyBuildingsScreen({
     <Screen>
       <View style={styles.topRow}>
         <Logo />
-        <View
-          style={styles.avatar}
-          accessible
-          accessibilityRole="image"
-          accessibilityLabel={`Your account: ${account.display_name}`}
-        >
-          <Text style={styles.avatarText}>{firstLetter}</Text>
+        <View style={styles.topRight}>
+          <Pressable
+            onPress={onLogOut}
+            accessibilityRole="button"
+            accessibilityLabel="Log out"
+            style={styles.logOut}
+          >
+            <Text style={styles.logOutText}>Log out</Text>
+          </Pressable>
+          <Pressable
+            style={styles.avatar}
+            onPress={onOpenSettings}
+            accessibilityRole="button"
+            accessibilityLabel={`Settings for ${account.display_name}`}
+          >
+            <Text style={styles.avatarText}>{firstLetter}</Text>
+          </Pressable>
         </View>
       </View>
 
@@ -182,16 +192,15 @@ export default function MyBuildingsScreen({
           </View>
         </>
       ) : null}
-
-      <View style={styles.spacer} />
-      <Button variant="outline" label="Log out" onPress={onLogOut} />
-      <TextLink danger label="Delete my account" onPress={onDeleteAccount} />
     </Screen>
   );
 }
 
 const styles = StyleSheet.create({
   topRow: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' },
+  topRight: { flexDirection: 'row', alignItems: 'center', gap: 4 },
+  logOut: { minHeight: 44, paddingHorizontal: 10, justifyContent: 'center' },
+  logOutText: { fontFamily: fonts.bold, fontSize: 14, color: colors.teal },
   avatar: {
     width: 40,
     height: 40,
@@ -290,5 +299,4 @@ const styles = StyleSheet.create({
     lineHeight: 19,
     color: colors.muted,
   },
-  spacer: { flexGrow: 1, minHeight: 16 },
 });
