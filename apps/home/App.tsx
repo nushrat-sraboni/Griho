@@ -13,8 +13,10 @@
 //   Leave a building   : confirm leaving (or deleting it, for the only owner)
 //   Flats              : the owner's list of flats, with add, rename and claim screens
 //   Join codes         : the owner's list of codes, with make, open (share, turn off or on) and delete
+//   Settings           : account (log out, delete account) and, inside a building, leave it
 //   Messages           : the person's chats in the building, "New message", the chat itself,
 //                        and the screen that confirms deleting one of their own messages
+// Inside a building, a bottom bar (Home, Messages, Settings) is shown on most screens.
 // It also remembers which building is "active" (open) while the app is running.
 // Owned by Bishal.
 
@@ -28,6 +30,7 @@ import {
 } from '@expo-google-fonts/plus-jakarta-sans';
 import { StatusBar } from 'expo-status-bar';
 import { useState } from 'react';
+import { View } from 'react-native';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
 import type { Account, Building, CodeInfo, Flat, MemberListItem, Message } from '@griho/shared';
 
@@ -38,6 +41,8 @@ import {
   type SubmitJoinRequestResult,
 } from './src/api';
 import { loadMembership } from './src/buildings';
+import TabBar from './src/components/TabBar';
+import { tabForScreen, type TabName } from './src/tabs';
 import BuildingHomeScreen from './src/screens/BuildingHomeScreen';
 import ChatScreen from './src/screens/ChatScreen';
 import ClaimFlatScreen from './src/screens/ClaimFlatScreen';
@@ -60,6 +65,7 @@ import PeopleScreen from './src/screens/PeopleScreen';
 import RemovePersonScreen from './src/screens/RemovePersonScreen';
 import RequestSentScreen from './src/screens/RequestSentScreen';
 import RequestsScreen from './src/screens/RequestsScreen';
+import SettingsScreen from './src/screens/SettingsScreen';
 import SignUpScreen from './src/screens/SignUpScreen';
 
 type ScreenName =
@@ -85,7 +91,8 @@ type ScreenName =
   | 'messages'
   | 'newMessage'
   | 'chat'
-  | 'deleteMessage';
+  | 'deleteMessage'
+  | 'settings';
 
 /** The chat that is open, and what the other person is called (or "Former member"). */
 type OpenChat = { conversationId: string; otherLabel: string };
@@ -125,6 +132,10 @@ export default function App() {
   // Messages: which chat is open, and which of my messages is about to be deleted.
   const [openChat, setOpenChat] = useState<OpenChat | null>(null);
   const [deleteMessageTarget, setDeleteMessageTarget] = useState<Message | null>(null);
+  // Settings: the building it was opened from, or null when opened from "My buildings".
+  const [settingsMembership, setSettingsMembership] = useState<MembershipWithLastOwner | null>(
+    null,
+  );
 
   /** Forgets everything about the person who was logged in. */
   function forgetEverything() {
@@ -139,6 +150,7 @@ export default function App() {
     setOpenCode(null);
     setOpenChat(null);
     setDeleteMessageTarget(null);
+    setSettingsMembership(null);
   }
 
   function handleLoggedIn(loggedIn: Account) {
@@ -195,9 +207,16 @@ export default function App() {
     setScreen('codes');
   }
 
-  function handleOpenMessages() {
+  function handleSelectTab(tab: TabName) {
     clearJustCreated();
-    setScreen('messages');
+    if (tab === 'home') {
+      setScreen('building');
+    } else if (tab === 'messages') {
+      setScreen('messages');
+    } else {
+      setSettingsMembership(active?.membership ?? null);
+      setScreen('settings');
+    }
   }
 
   function showChat(conversationId: string, otherLabel: string) {
@@ -272,8 +291,6 @@ export default function App() {
         onOpenFlats={handleOpenFlats}
         onOpenCodes={handleOpenCodes}
         onOpenPeople={handleOpenPeople}
-        onOpenMessages={handleOpenMessages}
-        onLeave={() => setScreen('leaveBuilding')}
       />
     );
   } else if (account && screen === 'messages' && active) {
@@ -368,7 +385,7 @@ export default function App() {
       <LeaveBuildingScreen
         membership={active.membership}
         account={account}
-        onBack={() => setScreen('building')}
+        onBack={() => setScreen('settings')}
         onSwitch={switchToBuildings}
         onLeft={handleLeft}
       />
@@ -456,6 +473,18 @@ export default function App() {
         onDone={handleFlatDone}
       />
     );
+  } else if (account && screen === 'settings') {
+    content = (
+      <SettingsScreen
+        account={account}
+        membership={settingsMembership}
+        onBack={switchToBuildings}
+        onSwitch={switchToBuildings}
+        onLogOut={handleLogOut}
+        onDeleteAccount={() => setScreen('deleteAccount')}
+        onLeave={() => setScreen('leaveBuilding')}
+      />
+    );
   } else if (account && screen === 'createBuilding') {
     content = <CreateBuildingScreen onBack={switchToBuildings} onCreated={handleCreated} />;
   } else if (account && screen === 'joinCode') {
@@ -474,7 +503,7 @@ export default function App() {
     content = (
       <DeleteAccountScreen
         account={account}
-        onBack={switchToBuildings}
+        onBack={() => setScreen('settings')}
         onDeleted={handleAccountDeleted}
       />
     );
@@ -493,7 +522,10 @@ export default function App() {
           setBuildingsNotice(null);
           setScreen('joinCode');
         }}
-        onDeleteAccount={() => setScreen('deleteAccount')}
+        onOpenSettings={() => {
+          setSettingsMembership(null);
+          setScreen('settings');
+        }}
         onLogOut={handleLogOut}
       />
     );
@@ -509,9 +541,22 @@ export default function App() {
     );
   }
 
+  // The bottom bar only shows inside a building (Settings opened from "My buildings" has none).
+  const tab =
+    account && active && (screen !== 'settings' || settingsMembership)
+      ? tabForScreen(screen)
+      : null;
+
   return (
     <SafeAreaProvider>
-      {content}
+      {tab ? (
+        <View style={{ flex: 1 }}>
+          <View style={{ flex: 1 }}>{content}</View>
+          <TabBar active={tab} onSelect={handleSelectTab} />
+        </View>
+      ) : (
+        content
+      )}
       <StatusBar style="dark" />
     </SafeAreaProvider>
   );
